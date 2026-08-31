@@ -1,0 +1,31 @@
+# OpenModelica / スクリプト生成物（再実行で作り直せるので追跡しない）
+data/_work/
+OM/*_res.csv
+OM/*.mat
+OM/*.exe
+OM/*.o
+OM/*.c
+OM/*.h
+OM/*.libs
+OM/*.makefile
+OM/*_info.json
+OM/*_init.xml
+OM/*_FMU*
+
+# eva*.py / compare / param_study が吐く出力（図は docs/img のみ追跡）
+data/temperature_*.csv
+data/temperature_*.png
+data/compare_OM_vs_exp.png
+data/pairplot.png
+data/pareto.png
+data/doe.csv
+data/results.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db

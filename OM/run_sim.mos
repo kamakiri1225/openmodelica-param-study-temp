@@ -1,0 +1,23 @@
+// ============================================================
+// OpenModelica batch script (Windows)
+//
+// 使い方 (OMフォルダ内で実行):
+//   "C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_sim.mos
+//
+// 実行するとタンク水温の時系列を CSV で出力します:
+//   ana003_Tank3blocks_cyclononly_NoTemp_res.csv
+// この CSV を data/compare_OM_vs_exp.py で実験データと比較します。
+// ============================================================
+
+loadModel(Modelica); getErrorString();
+
+loadFile("ana003_Tank3blocks_cyclononly_NoTemp.mo"); getErrorString();
+
+simulate(
+  ana003_Tank3blocks_cyclononly_NoTemp,
+  stopTime         = 200000,
+  numberOfIntervals= 2000,
+  outputFormat     = "csv",
+  variableFilter   = "time|tank1.medium.T|tank2.medium.T|tank3.medium.T"
+);
+getErrorString();
