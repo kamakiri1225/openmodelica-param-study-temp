@@ -131,7 +131,7 @@ def main():
     args = ap.parse_args()
     n = args.n
 
-    X = lhs(n, [(550.0, 720.0), (5.0, 12.0), (0.05, 0.16), (15.0, 35.0)])
+    X = lhs(n, [(550.0, 4000.0), (5.0, 12.0), (0.05, 0.16), (15.0, 35.0)])
     Q, h_air, level, Tair = X.T
     UA = np.array([ua(h_air[k], level[k]) for k in range(n)])
     tau5 = np.array([5 * cap(level[k]) / UA[k] / 3600.0 for k in range(n)])

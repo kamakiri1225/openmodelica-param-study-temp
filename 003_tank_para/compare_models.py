@@ -66,7 +66,7 @@ fig, ax = plt.subplots(figsize=(10, 6))
 no_fit = os.path.join(HERE, "OM", "_cmp_notemp_fit.csv")
 no = no_fit if os.path.exists(no_fit) else os.path.join(HERE, "OM", "_cmp_notemp.csv")
 yes = os.path.join(HERE, "OM", "_cmp_withtemp.csv")
-tag = "（heatCeffToAir=8.79, level=0.0755）" if os.path.exists(no_fit) else ""
+tag = " (同一モデル ctrl_k=0, heatCeffToAir=8.79, level=0.0755)" if os.path.exists(no_fit) else ""
 # 温度管理なし: OM(赤線) と 実測eva5(赤四角)
 if os.path.exists(no):
     t, T = tank_mean_C(no)
@@ -77,7 +77,7 @@ ax.plot(eva5_t / H, eva5, "s", color="darkred", markersize=6, label="実測 温�
 if os.path.exists(yes):
     t, T = tank_mean_C(yes)
     ax.plot(t / H, T, "-", color="tab:blue", linewidth=2.4,
-            label="OM 温度管理あり  終値%.1f℃" % T[-1])
+            label="OM 温度管理あり (同一モデル+制御, 目標=外気温)  終値%.1f℃" % T[-1])
 ax.plot(eva4_t / H, eva4, "^", color="navy", markersize=6, label="実測 温度管理あり (eva4)")
 ax.set_xlim(0, 40)
 ax.set_xlabel("Time [h]", fontsize=13)

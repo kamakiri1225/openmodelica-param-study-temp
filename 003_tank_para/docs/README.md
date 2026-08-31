@@ -69,10 +69,19 @@ python param_study.py pareto --csv results.csv
 
 ---
 
-## 4. 実機OMでの あり/なし（`compare_models.png`）
+## 4. 実機OMでの あり/なし（フェアな比較, `compare_models.png`）
 
-実機OMでも、温度管理なし（フィット後）は実測 eva5（37.7℃）に、温度管理あり（PID, 目標）は
-実測 eva4（〜24℃）に一致する（`docs/img/compare_models.png`）。集中定数の傾向を実機OMが裏付ける。
+**フェアな比較**：`OM/ana003_Tank3blocks_cyclononly_TempCtrl.mo` は、**温度管理なしモデル
+（サイクロンのみ）に温度管理レギュレータを追加した同一モデル**で、`ctrl_k`（温度管理ゲイン）
+だけを切り替える：
+- `ctrl_k=0`（なし）→ 37.8℃（実測 eva5=37.7℃ と一致）
+- `ctrl_k=300`（あり, 目標=外気温）→ 24.6℃（実測 eva4≈24℃ と一致）
+
+![あり/なし比較](img/compare_models.png)
+
+> 以前の比較は「あり」に別モデル（flood/cover/cyclone 3熱源のフルモデル）を使っており
+> フェアではなかった。上記は**同一モデル＋制御の有無のみ**の公平な比較。
+> 検証: omc で `-override ctrl_k=0` と `-override ctrl_k=300`（他は fit 値）で確認済み。
 
 ---
 
