@@ -11,10 +11,10 @@
 `temp_off/run_sim.mos` … `temp_off` 内で `omc.exe run_sim.mos` すると NoTemp モデルの
 結果CSVを出力する。
 
-## あり／なし比較（実機OM）
-- 2モデルのデフォルト比較: `docs/img/002/compare_models.png`
-  （なし ~35.6℃ vs あり 25℃保持）
-- あり模型内で PID ゲイン k=100/k=0 を切替えた比較: `docs/img/002/compare_control.png`
+## あり／なし比較（実機OM ＋ 実測）
+`docs/img/002/compare_models.png`（`docs/compare_models.py`）:
+- 温度管理**なし**: OM(フィット後) 37.8℃ ≈ 実測 **eva5** 37.7℃
+- 温度管理**あり**: OM(PID) 24.8℃ ≈ 実測 **eva4** 〜24℃
 
 再現手順は `docs/003_openmodelica_paramstudy_howto.md` を参照。
 
