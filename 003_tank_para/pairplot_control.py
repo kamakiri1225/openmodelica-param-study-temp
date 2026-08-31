@@ -120,7 +120,7 @@ def pairplot1(data, labels, cvals, clabel, path, title):
             if i == j:
                 ax.hist(data[:, i], bins=18, color="0.7", alpha=0.8)
             else:
-                sc = ax.scatter(data[:, j], data[:, i], c=cvals, cmap="coolwarm",
+                sc = ax.scatter(data[:, j], data[:, i], c=cvals, cmap="jet",
                                 s=18, alpha=0.75, edgecolor="none")
             if i == m - 1:
                 ax.set_xlabel(labels[j], fontsize=15)
