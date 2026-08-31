@@ -38,7 +38,7 @@ python param_study.py pareto --csv results.csv
 |---|---|---|
 | 因子の影響（vary_*） | 4因子 × 各120点の掃引 | 集中定数（1因子ずつ、他はフィット値固定） |
 | 影響グリッド / 目的空間 | LHS 300 点 | 集中定数 |
-| **温度管理あり/なし pairplot** | **設計点 250 × 2条件 = 500 ケース相当** | 集中定数（LHS: Q, heatCeffToAir, 水位, 外気温） |
+| **温度管理あり/なし pairplot** | **設計点 300 × 2条件 = 600 ケース相当** | 集中定数（LHS: Q, heatCeffToAir, 水位, 外気温, サイズ倍率） |
 | 実機OM あり/なし 比較 | 2 モデル（各 stopTime=40h） | OpenModelica |
 | 実機OM パラスタ（run_study） | LHS 30 点（既定） | OpenModelica |
 
@@ -52,6 +52,11 @@ python param_study.py pareto --csv results.csv
 
 温度管理なし（赤）:
 ![温度管理なし pairplot](img/pairplot_control_off.png)
+
+> **表面積とΔT**: 因子に **サイズ倍率(Lx,Ly)** を加えたので表面積が独立に変化する。
+> なし側で **表面積↔ΔT=−0.43（負）**（放熱面積が大きいほど温度上昇が小さい＝ΔT=Q/UA）。
+> 水位は主に体積・5τ（熱容量）に効き、サイズは面積・ΔT に効く。
+
 
 温度管理あり（青, 目標=外気温）:
 ![温度管理あり pairplot](img/pairplot_control_on.png)

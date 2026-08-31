@@ -51,31 +51,40 @@ A2 = Lx2_1 * Ly2_1 + Lx2_2 * Ly2_2
 A3 = Lx3_1 * Ly3_1
 
 
-def ua(h_air, level, h_in=10.0, kground=80.0):
-    UA_air = h_air * (A1 + A2 + A3)
+def _A(size):
+    """size(=Lx,Ly倍率)でスケールした各タンク上面積。"""
+    return A1 * size * size, A2 * size * size, A3 * size * size
+
+
+def ua(h_air, level, size=1.0, h_in=10.0, kground=80.0):
+    a1, a2, a3 = _A(size); s = size
+    UA_air = h_air * (a1 + a2 + a3)
 
     def g(Ain, Ac, Ag):
         return 1 / (1 / (h_in * Ain) + 1 / (Ac * kground / th) + 1 / (h_air * Ag))
-    u1 = g(A1 + Ly1_1 * level, A1 + Lx1_1 * level + Ly1_1 * level, A1 + Ly1_1 * level)
-    a2in = A2 + (Ly2_1 + Lx2_1) * level
-    u2 = g(a2in, A2 + (Lx2_1 + Ly2_1) * level, a2in)
-    a3g = A3 + (Lx3_1 + Ly3_1) * level
+    u1 = g(a1 + Ly1_1 * s * level, a1 + (Lx1_1 + Ly1_1) * s * level, a1 + Ly1_1 * s * level)
+    a2in = a2 + (Ly2_1 + Lx2_1) * s * level
+    u2 = g(a2in, a2 + (Lx2_1 + Ly2_1) * s * level, a2in)
+    a3g = a3 + (Lx3_1 + Ly3_1) * s * level
     u3 = g(a3g, a3g, a3g)
     return UA_air + u1 + u2 + u3
 
 
-def cap(level):
-    return (A1 * level + A2 * level + A3 * 0.9 * level) * rho_w * cp_w
+def cap(level, size=1.0):
+    a1, a2, a3 = _A(size)
+    return (a1 * level + a2 * level + a3 * 0.9 * level) * rho_w * cp_w
 
 
-def volume_L(level):
-    return (A1 * level + A2 * level + A3 * 0.9 * level) * 1000.0   # m3 -> L
+def volume_L(level, size=1.0):
+    a1, a2, a3 = _A(size)
+    return (a1 * level + a2 * level + a3 * 0.9 * level) * 1000.0   # m3 -> L
 
 
-def area_total(level):
+def area_total(level, size=1.0):
     """放熱面積 [m2] = 上面 + 側/底(濡れ面積)。"""
-    A_top = A1 + A2 + A3
-    A_g = (A1 + Ly1_1 * level) + (A2 + (Ly2_1 + Lx2_1) * level) + (A3 + (Lx3_1 + Ly3_1) * level)
+    a1, a2, a3 = _A(size); s = size
+    A_top = a1 + a2 + a3
+    A_g = (a1 + Ly1_1 * s * level) + (a2 + (Ly2_1 + Lx2_1) * s * level) + (a3 + (Lx3_1 + Ly3_1) * s * level)
     return A_top + A_g
 
 
@@ -136,10 +145,11 @@ def main():
     args = ap.parse_args()
     n = args.n
 
-    X = lhs(n, [(400.0, 4000.0), (5.0, 12.0), (0.05, 0.16), (15.0, 35.0)])
-    Q, h_air, level, Tair = X.T
-    UA = np.array([ua(h_air[k], level[k]) for k in range(n)])
-    tau5 = np.array([5 * cap(level[k]) / UA[k] / 3600.0 for k in range(n)])
+    # 因子: 発熱量Q, heatCeffToAir, 水位level, 外気温Tair, サイズ倍率size(=Lx,Ly)
+    X = lhs(n, [(400.0, 4000.0), (5.0, 12.0), (0.05, 0.16), (15.0, 35.0), (0.8, 1.4)])
+    Q, h_air, level, Tair, size = X.T
+    UA = np.array([ua(h_air[k], level[k], size[k]) for k in range(n)])
+    tau5 = np.array([5 * cap(level[k], size[k]) / UA[k] / 3600.0 for k in range(n)])
 
     # なし: ΔT=Q/UA
     # あり: 目標=外気温。冷却上限 Qcool_max まではΔT=0、超えると ΔT=(Q-Qcool_max)/UA
@@ -150,15 +160,15 @@ def main():
     # 2条件を積む
     def stack(a_off, a_on):
         return np.concatenate([a_off, a_on])
-    V = np.array([volume_L(level[k]) for k in range(n)])
-    Ar = np.array([area_total(level[k]) for k in range(n)])
+    V = np.array([volume_L(level[k], size[k]) for k in range(n)])
+    Ar = np.array([area_total(level[k], size[k]) for k in range(n)])
     Tfin_off = Tair + dT_off     # 最終水温(絶対) = 外気温 + 温度上昇
     Tfin_on = Tair + dT_on
-    labels = ["発熱量Q [W]", "heatCeffToAir", "外気温 [degC]", "体積 [L]",
-              "表面積 [m²]", "水位 [m]", "最終水温 [degC]", "温度上昇 ΔT [K]", "5τ [h]"]
+    labels = ["発熱量Q [W]", "heatCeffToAir", "外気温 [degC]", "サイズ倍率", "水位 [m]",
+              "体積 [L]", "表面積 [m²]", "最終水温 [degC]", "温度上昇 ΔT [K]", "5τ [h]"]
 
-    data_off = np.column_stack([Q, h_air, Tair, V, Ar, level, Tfin_off, dT_off, tau5])
-    data_on = np.column_stack([Q, h_air, Tair, V, Ar, level, Tfin_on, dT_on, tau5])
+    data_off = np.column_stack([Q, h_air, Tair, size, level, V, Ar, Tfin_off, dT_off, tau5])
+    data_on = np.column_stack([Q, h_air, Tair, size, level, V, Ar, Tfin_on, dT_on, tau5])
     pairplot1(data_off, labels, Q, "発熱量Q [W]", os.path.join(IMG, "pairplot_control_off.png"),
               "温度管理なし pairplot（%d ケース, 上三角=相関係数）" % n)
     pairplot1(data_on, labels, Q, "発熱量Q [W]", os.path.join(IMG, "pairplot_control_on.png"),
