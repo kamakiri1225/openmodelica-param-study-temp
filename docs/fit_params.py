@@ -143,24 +143,72 @@ plt.savefig(out, dpi=150, bbox_inches="tight")
 print("\nsaved:", out)
 
 # ============================================================
-# 図: air + 水位 の良好フィット (RMSE 0.24)
+# 図: air + 水位 の良好フィット (RMSE 0.24) — 平均 | 非平均(tank1/2/3) の2枚並び
 # ============================================================
-fig, ax = plt.subplots(figsize=(9.5, 5.8))
-for s in sensors:
-    ax.plot(time_s / H, s, "o", markersize=3, alpha=0.3, color="gray")
-ax.plot(time_s / H, exp_mean, "ks", markersize=5, label="実験 4センサ平均")
-ax.plot(tt / H, curve(tt), "-", color="tab:blue", linewidth=2.0,
-        label="ベース (h_air=10, level=0.128)  RMSE=%.2f" % rmse(base))
-ax.plot(tt / H, curve(tt, h_air=ha, level=lv), "-", color="tab:red", linewidth=2.4,
-        label="フィット (h_air=%.2f, level=%.3f)  RMSE=%.2f"
-              % (ha, lv, rmse(curve(time_s, h_air=ha, level=lv))))
-ax.set_xlabel("Time [h]", fontsize=12)
-ax.set_ylabel("Temperature [degC]", fontsize=12)
-ax.set_xlim(0, 200000 / H)
-ax.set_ylim(23, 40)
-ax.grid(True, alpha=0.4)
-ax.legend(fontsize=9, loc="lower right")
-ax.set_title("air＋水位で合わせ込み（heatCeffToAir・level_start 調整, Q=610固定）")
+from scipy.integrate import odeint
+
+
+def per_tank(h_air, level):
+    """各タンクの UA_i [W/K] と C_i [J/K] を返す。"""
+    def g(Ain, Ac, Ag):
+        return 1 / (1 / (10 * Ain) + 1 / (Ac * 80 / th) + 1 / (h_air * Ag))
+    UA1 = h_air * A1 + g(A1 + Ly1_1 * level, A1 + Lx1_1 * level + Ly1_1 * level, A1 + Ly1_1 * level)
+    A2in = A2 + Ly2_1 * level + Ly2_2 * level + Lx2_1 * level
+    UA2 = h_air * A2 + g(A2in, Lx2_1 * Ly2_1 + Lx2_1 * level + Ly2_1 * level, A2in)
+    A3g = A3 + Lx3_1 * level + Ly3_1 * level
+    UA3 = h_air * A3 + g(A3g, A3g, A3g)
+    C1 = A1 * level * rho_w * cp_w
+    C2 = A2 * level * rho_w * cp_w
+    C3 = A3 * 0.9 * level * rho_w * cp_w
+    return (UA1, UA2, UA3), (C1, C2, C3)
+
+
+def tanks_transient(h_air, level, mdot=1.83):
+    """3タンク+循環(ループ 1->2->3->1, Qは循環水へ)の連成ODEを解き T1,T2,T3[degC]。"""
+    (UA1, UA2, UA3), (C1, C2, C3) = per_tank(h_air, level)
+    w = mdot * cp_w  # 循環の熱コンダクタンス [W/K]
+
+    def f(T, t):
+        T1, T2, T3 = T
+        d1 = (w * (T3 - T1) - UA1 * (T1 - Tair) + Q) / C1
+        d2 = (w * (T1 - T2) - UA2 * (T2 - Tair)) / C2
+        d3 = (w * (T2 - T3) - UA3 * (T3 - Tair)) / C3
+        return [d1, d2, d3]
+    sol = odeint(f, [Tair, Tair, Tair], tt)
+    return sol[:, 0], sol[:, 1], sol[:, 2]
+
+
+T1, T2, T3 = tanks_transient(ha, lv)
+Tmean_tanks = (T1 + T2 + T3) / 3.0
+print("tank間温度差(飽和): max-min = %.3f degC (tank1=%.2f tank2=%.2f tank3=%.2f)"
+      % (max(T1[-1], T2[-1], T3[-1]) - min(T1[-1], T2[-1], T3[-1]), T1[-1], T2[-1], T3[-1]))
+
+fig, (axA, axB) = plt.subplots(1, 2, figsize=(14, 5.8), sharey=True)
+
+# 左: 平均どうし
+axA.plot(time_s / H, exp_mean, "ks", markersize=5, label="実験 4センサ平均")
+axA.plot(tt / H, curve(tt), "-", color="tab:blue", linewidth=1.8,
+         label="ベース  RMSE=%.2f" % rmse(base))
+axA.plot(tt / H, Tmean_tanks, "-", color="tab:red", linewidth=2.4,
+         label="OM 平均(tank1-3)  RMSE=%.2f"
+               % np.sqrt(np.mean((np.interp(time_s, tt, Tmean_tanks) - exp_mean) ** 2)))
+axA.set_title("平均どうし（実験4点平均 vs OM 3タンク平均）")
+axA.set_xlabel("Time [h]"); axA.set_ylabel("Temperature [degC]")
+axA.set_xlim(0, 200000 / H); axA.set_ylim(23, 40); axA.grid(True, alpha=0.4)
+axA.legend(fontsize=9, loc="lower right")
+
+# 右: 非平均（実測4センサ + OM tank1/2/3）
+scol = {"4-16": "tab:blue", "4-17": "tab:orange", "4-18": "tab:green", "4-19": "tab:red"}
+for name, s, c in zip(["4-16", "4-17", "4-18", "4-19"], sensors, scol.values()):
+    axB.plot(time_s / H, s, "o", markersize=3.5, color=c, alpha=0.8, label="実験 " + name)
+axB.plot(tt / H, T1, "-", color="k", linewidth=1.6, label="OM tank1")
+axB.plot(tt / H, T2, "--", color="k", linewidth=1.6, label="OM tank2")
+axB.plot(tt / H, T3, ":", color="k", linewidth=1.8, label="OM tank3")
+axB.set_title("非平均（実測4点分布 vs OM tank1/2/3。OMは循環でほぼ均一）")
+axB.set_xlabel("Time [h]")
+axB.set_xlim(0, 200000 / H); axB.grid(True, alpha=0.4)
+axB.legend(fontsize=8, loc="lower right", ncol=2)
+
 plt.tight_layout()
 out6 = os.path.join(IMG, "fit_air_level.png")
 plt.savefig(out6, dpi=150, bbox_inches="tight")
