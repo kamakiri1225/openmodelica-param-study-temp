@@ -34,6 +34,22 @@ OM/**/*.xml
 OM/**/*.libs
 OM/**/*_res.csv
 OM/**/res_*.csv
+OM/_c0/
+OM/_c1/
+OM/_ctrl_*.csv
+
+# cup: OM ビルド副産物・結果CSV（比較図 png は追跡）
+cup/_build/
+cup/*_res.csv
+cup/*.bin
+cup/*.o
+cup/*.exe
+cup/*.bat
+cup/*.log
+cup/*.json
+cup/*.xml
+cup/*.makefile
+cup/*.libs
 
 # eva*.py / compare / param_study が吐く出力（図は docs/img のみ追跡）
 data/temperature_*.csv

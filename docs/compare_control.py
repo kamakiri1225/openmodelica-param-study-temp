@@ -34,7 +34,7 @@ matplotlib.rcParams["axes.unicode_minus"] = False
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-CTRL = os.path.join(ROOT, "OM", "_ctrl")
+CTRL = os.path.join(ROOT, "OM")
 IMG2 = os.path.join(HERE, "img", "002")
 os.makedirs(IMG2, exist_ok=True)
 H = 3600.0
@@ -49,8 +49,8 @@ def tank_mean_C(csv):
 
 
 def main():
-    on = os.path.join(CTRL, "res_on.csv")
-    off = os.path.join(CTRL, "res_off.csv")
+    on = os.path.join(CTRL, "_ctrl_on.csv")
+    off = os.path.join(CTRL, "_ctrl_off.csv")
     fig, ax = plt.subplots(figsize=(10, 6))
     if os.path.exists(off):
         t, T = tank_mean_C(off)

@@ -1,0 +1,6 @@
+// 桶水加熱モデルを回す:  omc.exe run_cup.mos
+loadModel(Modelica); getErrorString();
+loadFile("CupHotWater_15W_001.mo"); getErrorString();
+simulate(CupHotWater_15W_001, stopTime=3600, numberOfIntervals=360,
+  outputFormat="csv", variableFilter="time|y_sim_T|y_exp_T|cup.medium.T|cup.level");
+getErrorString();
