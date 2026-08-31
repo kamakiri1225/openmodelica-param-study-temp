@@ -1,71 +1,49 @@
-# OpenModelica / スクリプト生成物（再実行で作り直せるので追跡しない）
-data/_work/
-OM/*_res.csv
-OM/*.mat
-OM/*.exe
-OM/*.o
-OM/*.c
-OM/*.h
-OM/*.libs
-OM/*.makefile
-OM/*_info.json
-OM/*_init.xml
-OM/*_FMU*
-OM/*.bat
-OM/*.log
-OM/*.bin
-OM/*.json
-OM/*.xml
-OM/_*.mos
-OM/ana003_Tank3blocks_cyclononly_NoTemp
-OM/ana003_Tank3blocks_cyclononly_NoTemp.exe
-# OM ビルド副産物・実行結果（サブフォルダ含む）
-OM/_ctrl/
-OM/**/*.bin
-OM/**/*.o
-OM/**/*.c
-OM/**/*.h
-OM/**/*.exe
-OM/**/*.bat
-OM/**/*.log
-OM/**/*.makefile
-OM/**/*.json
-OM/**/*.xml
-OM/**/*.libs
-OM/**/*_res.csv
-OM/**/res_*.csv
-OM/_c0/
-OM/_c1/
-OM/_ctrl_*.csv
-OM/_cmp_*.csv
+# ============================================================
+# OpenModelica / スクリプトの生成物（再実行で作り直せるので追跡しない）
+# 追跡するのは .mo / .py / .mos / .md / .csv(実験データ) / docs/img の図
+# ============================================================
 
-# cup: OM ビルド副産物・結果CSV（比較図 png は追跡）
-cup/_build/
-cup/*_res.csv
-cup/*.bin
-cup/*.o
-cup/*.exe
-cup/*.bat
-cup/*.log
-cup/*.json
-cup/*.xml
-cup/*.makefile
-cup/*.libs
+# OpenModelica ビルド副産物（全フォルダの OM/ や作業ディレクトリ）
+**/_build/
+**/_work/
+**/_cmp*/
+**/_c[0-9]*/
+**/_ctrl*/
+**/_run/
+**/_rn/
+**/OM/_*/
+**/*.exe
+**/*.o
+**/*.c
+**/*.h
+**/*.bin
+**/*.json
+**/*.xml
+**/*.bat
+**/*.log
+**/*.makefile
+**/*.libs
 
-# eva*.py / compare / param_study が吐く出力（図は docs/img のみ追跡）
-data/temperature_*.csv
-data/temperature_*.png
-data/compare_OM_vs_exp.png
-data/pairplot.png
-data/pareto.png
-data/doe.csv
-data/results.csv
+# OM 結果 CSV（実験データ以外）
+**/OM/*_res.csv
+**/OM/_cmp_*.csv
+**/*_res.csv
+**/res_*.csv
 
-# Python
+# パラメータスタディの生成物（cwd に出るもの）
+003_tank_para/doe.csv
+003_tank_para/results.csv
+003_tank_para/pairplot.png
+003_tank_para/pareto.png
+
+# eva*.py / compare が吐く一時出力
+**/temperature_*.csv
+**/temperature_*.png
+**/compare_OM_vs_exp.png
+
+# Python / OS
 __pycache__/
 *.pyc
 *.pyo
-
-# OS
 .DS_Store
 Thumbs.db

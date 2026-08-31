@@ -57,7 +57,7 @@ python plot_htop_compare.py         # -> CupHotWater_15W_htop_compare.png
 
 修正後、OM と実験は **RMSE 0.55 ℃** でよく一致する（27.6→約41℃で飽和）。
 
-![OM vs 実験](../cup/CupHotWater_15W_compare.png)
+![OM vs 実験](../CupHotWater_15W_compare.png)
 
 - 水量 288 mL（0.288 kg）、15 W 加熱。
 - 放熱経路：上面（蒸発込み）＋ 側壁・底面（桶壁 SUS304 経由で外気へ）。
@@ -76,7 +76,7 @@ python plot_htop_compare.py         # -> CupHotWater_15W_htop_compare.png
 
 上面を普通の対流（10）にすると放熱不足で **58 ℃まで過熱**し、実験（~41 ℃）と乖離する。
 
-![h_topの影響](../cup/CupHotWater_15W_htop_compare.png)
+![h_topの影響](../CupHotWater_15W_htop_compare.png)
 
 | h_top | 飽和温度 | RMSE |
 |---|---|---|

@@ -47,7 +47,7 @@ OpenModelica モデル `OM/ana003_Tank3blocks_cyclononly_NoTemp.mo` と、実験
 **センサの場所ごとの違い**（4-18 が最も高温 +0.2〜0.5℃、4-19 が最も低温 −0.2〜0.4℃、
 振れ幅は ±0.5℃ 程度）:
 
-![実験センサ 場所ごと](img/001/exp_by_location.png)
+![実験センサ 場所ごと](img/exp_by_location.png)
 
 ### 1.2 集中定数モデルによる解析的な一次確認（OM を回さずに妥当性を確認）
 
@@ -74,7 +74,7 @@ OpenModelica モデル `OM/ana003_Tank3blocks_cyclononly_NoTemp.mo` と、実験
 **001: 実験 vs OM相当ベースライン**（集中定数解析解を OM 相当として描画。横軸は時間[h]）。
 ベースは実験より低め・遅めで、上記の数値（−1.6℃, 1.4倍遅い）と一致する:
 
-![001 実験 vs OMベース](img/001/exp_vs_OM_base.png)
+![001 実験 vs OMベース](img/exp_vs_OM_base.png)
 
 計算時間を約 56h（200,000 s）まで延ばすと、ベースは 36.1℃ で**飽和して頭打ち**になり、
 実験の 37.7℃ には届かない。つまり不足しているのは**計算時間ではなくパラメータ**
@@ -211,16 +211,16 @@ tank1/tank3 面積は低感度で固定してよい。→ スタディの設計�
 
 **Q（投入熱）**: 飽和温度が上下（時定数はほぼ不変）。実測 37.7℃ に合わせるには Q↑。
 
-![Qの影響](img/002/vary_Q.png)
+![Qの影響](../../003_tank_para/docs/img/vary_Q.png)
 
 **level（水量）**: 立ち上がりの速さ（時定数）が変化（飽和温度はほぼ不変）。実測は
 ベースより速いので level↓（水量減）方向。
 
-![levelの影響](img/002/vary_level.png)
+![levelの影響](../../003_tank_para/docs/img/vary_level.png)
 
 **h_air（外気放熱）**: 飽和温度と速さの両方に効く（UA 経由）。
 
-![h_airの影響](img/002/vary_h_air.png)
+![h_airの影響](../../003_tank_para/docs/img/vary_h_air.png)
 
 > これらの図は解析解（集中定数）で描いた傾向。実 OM では `data/run_study.py` が
 > 各ケースの `compare_XXX.png` を同じ様式（実験＋OM重畳）で連番生成する。
@@ -247,7 +247,7 @@ tank1/tank3 面積は低感度で固定してよい。→ スタディの設計�
 集中定数モデルを実験平均カーブに最小二乗フィット（Q=610 W 固定、`docs/fit_params.py`）。
 **RMSE 2.42℃ → 0.24℃** に改善し、ほぼ完全一致する:
 
-![実機フィット](img/001/fit_air_level.png)
+![実機フィット](img/fit_air_level.png)
 
 | パラメータ | ベース | **フィット推奨** | 効果 |
 |---|---|---|---|

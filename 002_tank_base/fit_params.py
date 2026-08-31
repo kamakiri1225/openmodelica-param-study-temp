@@ -34,7 +34,7 @@ for cand in ["~/.fonts/NotoSansCJKjp-Regular.otf",
 matplotlib.rcParams["axes.unicode_minus"] = False
 
 HERE = os.path.dirname(__file__)
-IMG = os.path.join(HERE, "img", "001")   # 合わせこみ(001)の図
+IMG = os.path.join(HERE, "docs", "img")   # 合わせこみ(001)の図
 os.makedirs(IMG, exist_ok=True)
 
 # ---- 実験データ (eva5) ----
@@ -208,7 +208,7 @@ axA.axhline(Tmax5, color="0.4", ls=":", lw=1.2)
 axA.plot(t5, Tmax5, "o", color="green", ms=7)
 axA.text(t5 + 0.6, 33.2, "5τ=%.0f h で整定\nTmax=%.1f℃ (99.3%%到達)" % (t5, Tmax5),
          fontsize=10, color="green")
-axA.set_title("平均どうし（τ=63.2%到達, Tmax=5τ整定で読む）")
+axA.set_title("実測平均 vs OM平均（τ=63.2%到達, Tmax=5τ整定で読む）")
 axA.set_xlabel("Time [h]"); axA.set_ylabel("Temperature [degC]")
 axA.set_xlim(0, 200000 / H); axA.set_ylim(23, 40); axA.grid(True, alpha=0.4)
 axA.legend(fontsize=9, loc="lower right")
@@ -220,7 +220,7 @@ for name, s, c in zip(["4-16", "4-17", "4-18", "4-19"], sensors, scol.values()):
 axB.plot(tt / H, T1, "-", color="k", linewidth=1.6, label="OM tank1")
 axB.plot(tt / H, T2, "--", color="k", linewidth=1.6, label="OM tank2")
 axB.plot(tt / H, T3, ":", color="k", linewidth=1.8, label="OM tank3")
-axB.set_title("非平均（実測4点分布 vs OM tank1/2/3。OMは循環でほぼ均一）")
+axB.set_title("実測4センサ分布 vs OM tank1/2/3（OMは循環でほぼ均一）")
 axB.set_xlabel("Time [h]"); axB.set_ylabel("Temperature [degC]")
 axB.set_xlim(0, 200000 / H); axB.set_ylim(23, 40); axB.grid(True, alpha=0.4)
 axB.legend(fontsize=8, loc="lower right", ncol=2)

@@ -63,10 +63,10 @@ eva4 = np.array([
 
 fig, ax = plt.subplots(figsize=(10, 6))
 # 温度管理なし: フィット後のOMがあればそれを、無ければ基準を使う
-no_fit = os.path.join(ROOT, "OM", "_cmp_notemp_fit.csv")
-no = no_fit if os.path.exists(no_fit) else os.path.join(ROOT, "OM", "_cmp_notemp.csv")
-yes = os.path.join(ROOT, "OM", "_cmp_withtemp.csv")
-tag = "（フィット後）" if os.path.exists(no_fit) else ""
+no_fit = os.path.join(HERE, "OM", "_cmp_notemp_fit.csv")
+no = no_fit if os.path.exists(no_fit) else os.path.join(HERE, "OM", "_cmp_notemp.csv")
+yes = os.path.join(HERE, "OM", "_cmp_withtemp.csv")
+tag = "（heatCeffToAir=8.79, level=0.0755）" if os.path.exists(no_fit) else ""
 # 温度管理なし: OM(赤線) と 実測eva5(赤四角)
 if os.path.exists(no):
     t, T = tank_mean_C(no)
@@ -86,6 +86,6 @@ ax.set_title("温度管理あり／なし の比較（実機OM ＋ 実測 eva4=�
 ax.grid(True, alpha=0.4)
 ax.legend(fontsize=12)
 plt.tight_layout()
-out = os.path.join(HERE, "img", "002", "compare_models.png")
+out = os.path.join(HERE, "docs", "img", "compare_models.png")
 plt.savefig(out, dpi=150, bbox_inches="tight")
 print("saved:", out)

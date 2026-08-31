@@ -40,7 +40,7 @@ matplotlib.rcParams["axes.unicode_minus"] = False
 matplotlib.rcParams["font.size"] = 13
 
 HERE = os.path.dirname(__file__)
-IMG2 = os.path.join(HERE, "img", "002")
+IMG2 = os.path.join(HERE, "docs", "img")
 os.makedirs(IMG2, exist_ok=True)
 
 # ---- 実験データ (eva5) と参考の (ΔT, 5τ) ----

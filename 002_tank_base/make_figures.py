@@ -41,9 +41,9 @@ for cand in ["~/.fonts/NotoSansCJKjp-Regular.otf",
 matplotlib.rcParams["axes.unicode_minus"] = False
 
 HERE = os.path.dirname(__file__)
-IMG = os.path.join(HERE, "img")
-IMG1 = os.path.join(IMG, "001")   # 合わせこみ
-IMG2 = os.path.join(IMG, "002")   # パラスタ
+IMG = os.path.join(HERE, "docs", "img")
+IMG1 = IMG
+IMG2 = IMG
 os.makedirs(IMG1, exist_ok=True)
 os.makedirs(IMG2, exist_ok=True)
 

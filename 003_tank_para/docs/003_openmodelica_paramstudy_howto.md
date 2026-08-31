@@ -57,7 +57,7 @@ simulate(ana003_Tank3blocks_cyclononly_NoTemp, stopTime=200000, numberOfInterval
 ## 2. パラメータスタディ（自動・多ケース）
 
 `data/run_study.py` が LHS 設計表の各行を omc で回し、応答（Tmax・τ・RMSE）を集計、
-実験と重ねた連番比較図 `docs/img/002/compare_XXX.png` を保存する。
+実験と重ねた連番比較図 `docs/img/compare_XXX.png` を保存する。
 
 ```bash
 cd ana005_OM_opt/data
@@ -67,7 +67,7 @@ python param_study.py gen --n 30          # -> doe.csv
 
 # 2-2. 各ケースを omc で実行（WSL は OMC を指定）
 export OMC="/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe"   # WSL
-python run_study.py                        # -> results.csv, docs/img/002/compare_XXX.png
+python run_study.py                        # -> results.csv, docs/img/compare_XXX.png
 #   Windows(cmd) は既定パスなので:  python run_study.py
 
 # 2-3. 結果を可視化（pairplot / 目的空間）

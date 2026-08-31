@@ -1,73 +1,35 @@
-# openmodelica-param-study-temp
+# OpenModelica 1DCAE — 桶の水加熱・タンク水温 モデル集
 
-OpenModelica の水槽水温モデル（3タンク・サイクロン加熱・循環）を、実験データに
-合わせ込むためのパラメータスタディ一式。集中定数モデルによる解析的な照合・フィットと、
-Windows の Python + OpenModelica(omc.exe) で回す自動パラメータスタディを収録。
+OpenModelica による 1DCAE モデルと実験データの比較・パラメータスタディ。
+テーマ別に **番号付きフォルダ**へ整理し、各フォルダの `docs/` に実行手順・結果をまとめている。
 
-詳細は **[docs/parameter_study_plan.md](docs/parameter_study_plan.md)** を参照。
+| フォルダ | テーマ | 内容 |
+|---|---|---|
+| **[001_cup](001_cup/)** | 桶の水加熱（15W） | 底面加熱の1DCAE。実験と RMSE 0.55℃ で一致。蒸発を含む上面熱伝達率の検討 |
+| **[002_tank_base](002_tank_base/)** | タンク水温 ベース | 3槽サイクロン加熱モデルの合わせこみ（実験 eva5, RMSE 0.24℃）・数式化・感度 |
+| **[003_tank_para](003_tank_para/)** | タンク パラメータスタディ | 因子影響・pairplot・**温度管理あり/なし**の比較（実機OM＋pairplot） |
 
-## 主な結果
+各フォルダは自己完結（モデル `.mo`・スクリプト・データ・`docs/`）。実行手順は各 `docs/README.md` 参照。
 
-- モデル（`OM/temp_off/ana003_Tank3blocks_cyclononly_NoTemp.mo`）と実験（`data/eva5.py`）を照合。
-- ベースは飽和温度が −1.6℃ 低く、立ち上がりも遅い（RMSE 2.42℃）。
-- 集中定数フィットで **RMSE 0.24℃** まで一致（`Q=610` 固定、`heatCeffToAir=8.79`,
-  `level_start=0.0755`）。飽和温度は放熱 UA を約12%減、立ち上がりは実効水量を
-  409→241 kg（水位 128→76 mm 相当）で合う。幾何寸法はレイアウト図と一致を確認済み。
+---
 
-![実機フィット](docs/img/001/fit_air_level.png)
+## 代表結果：桶の水加熱（001_cup）
 
-## 構成
+桶（内寸 底面 160×90mm, 高さ30mm）に水を20mm入れ、底面を15Wで加熱する 1DCAE モデル。
+OpenModelica の計算と実験がよく一致する（**RMSE 0.55℃**）。
 
-```
-OM/       OpenModelica モデル（OM/README.md 参照）
-  temp_off/  温度管理なし（NoTemp, 主対象）＋ run_sim.mos
-  temp_on/   温度管理あり（PIDレギュレータ）
-  _archive/  旧版（未使用）
-data/     実験データ eva*.py、比較 compare_OM_vs_exp.py、param_study.py / run_study.py
-docs/     計画書・レポート(001-004)、図生成スクリプト、img/
-cup/      桶の水加熱 1DCAE（別テーマ, cup/README.md 参照）
-```
+![桶の水加熱 OM vs 実験](001_cup/CupHotWater_15W_compare.png)
 
-## 使い方（Windows）
+- 放熱経路は **上面（蒸発込み h_top=55）** と **側壁・底面（自然対流 h=10, SUS304桶経由）**。
+- 水面の熱伝達率が大きいのは**蒸発（潜熱）**が支配的なため（Chilton–Colburn アナロジーで
+  実効 h≈45 と見積られ、使用値55とオーダー一致）。h_top=10（対流のみ）では 58℃まで過熱して合わない。
+- 詳細は [001_cup/docs/README.md](001_cup/docs/README.md)。
 
-```bat
-:: 基準ケースを OM で回して実験と比較
-cd OM\temp_off
-"C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_sim.mos
-cd ..\..\data
-python compare_OM_vs_exp.py
+---
 
-:: パラメータスタディ（LHS -> omc 実行 -> パレート）
-python param_study.py gen --n 30
-python run_study.py
-python param_study.py pareto --csv results.csv
-```
+## 実行環境
+- OpenModelica 1.26.3（`omc.exe`）。WSL からも実行可（モデルパスは Windows 形式に変換）。
+- Python: `numpy pandas matplotlib scipy`（作図・フィット）。
 
-必要な Python パッケージ: `numpy pandas matplotlib scipy`（pairplot 用に任意で `seaborn`）。
-
-## ドキュメントの図を再現する（集中定数モデル・Python のみ、OM 不要）
-
-`docs/` の図はすべて Python スクリプトで再生成できる（数秒）。リポジトリ直下で:
-
-```bash
-python docs/lumped_check.py        # 集中定数の一次確認（数値のみ）
-python docs/make_figures.py        # 001: 場所差 / ベース比較 / Q・level・h_air 影響
-python docs/fit_params.py          # 001: 合わせこみ図（fit_air_only / fit_air_level 等, 要 scipy）
-python docs/study_pareto_demo.py   # 002: vary_size / influence / objective_map / pairplot(*)
-```
-
-`study_pareto_demo.py` が出す図（`docs/img/002/`）:
-- `pairplot.png` … 設計変数＋各熱流（発熱量／上面→大気／側底→地面）＋体積＋Tmax・5τ
-- `pairplot_Lx.png` … タンク別 Lx を個別に振ったスタディ
-- `influence.png` … 因子ごとの影響（Tmax・5τ × 各因子）
-- `vary_size.png` … タンク寸法拡大（容量増）の効果
-- `objective_map.png` … 目的空間 5τ–Tmax
-
-> 画面表示なしで走らせる場合は `MPLBACKEND=Agg` を付ける（例:
-> `MPLBACKEND=Agg python docs/study_pareto_demo.py`）。
-
-## 実機 OpenModelica で回す
-
-集中定数は代理。実際に omc.exe を回す手順は
-**[docs/003_openmodelica_paramstudy_howto.md](docs/003_openmodelica_paramstudy_howto.md)** を参照
-（WSL からの実行、`-override` での因子振り、実行時間の目安など）。
+> 各フォルダの `OM/` 直下や `_build/` に出る**ビルド副産物・結果CSV は再実行で作り直せる**ため
+> `.gitignore` で除外している（追跡するのは `.mo`/`.py`/`.md`/図）。

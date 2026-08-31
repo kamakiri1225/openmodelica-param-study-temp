@@ -27,7 +27,7 @@
 各列＝その因子だけを振り、他はフィット値に固定した応答。上段＝Tmax、下段＝τ。
 灰破線＝実験値、黒点＝フィット点。
 
-![影響グリッド](img/002/influence.png)
+![影響グリッド](img/influence.png)
 
 **読み取り（影響の確認）**
 
@@ -46,7 +46,7 @@
 
 タンクの水平寸法（Lx, Ly）を 1.0→1.3 倍にしたときの水温（Q・h_air・level はフィット値固定）。
 
-![寸法拡大の効果](img/002/vary_size.png)
+![寸法拡大の効果](img/vary_size.png)
 
 **重要な知見**：寸法を s 倍すると **放熱面積 UA∝s²** も **水量 C∝s²** も同率で増えるため、
 - **τ = C/UA はほぼ不変**（6.1→6.2 h）
@@ -62,7 +62,7 @@
 
 LHS N=300 で 4 因子を同時に振った結果を τ–Tmax 平面に投影。色＝size。
 
-![目的空間](img/002/objective_map.png)
+![目的空間](img/objective_map.png)
 
 - 小さいタンク（青紫）は高 Tmax 側、大きいタンク（黄）は低 Tmax 側に分布。
 - 実験値（★, 37.7℃/6.3h）近傍は到達可能。特定の目標を決めれば、この分布から
@@ -90,7 +90,7 @@ python param_study.py pareto --csv results.csv
 変数に載せた pairplot。点の色＝Tmax、時間指標＝**5τ**。
 （発熱量 Q ＝ 上面→大気放熱 ＋ 側/底→地面放熱、が定常のエネルギー保存）
 
-![リッチ pairplot](img/002/pairplot.png)
+![リッチ pairplot](img/pairplot.png)
 
 **上三角のマスに各ペアの相関係数 r（Pearson）**を表示（赤＝正・青＝負、文字サイズ＝|r|）。
 主な相関：Q↔上面放熱 0.86、Q↔地面放熱 0.74、水位↔体積 0.80、水位↔5τ 0.77、
@@ -105,7 +105,7 @@ heatCeffToAir↔Tmax −0.69、側/底放熱↔Tmax 0.68。
 
 ### タンク別 Lx 個別スタディ（`pairplot_Lx.png`）
 
-![Lx個別 pairplot](img/002/pairplot_Lx.png)
+![Lx個別 pairplot](img/pairplot_Lx.png)
 
 - **Lx2（tank2）を大きくすると Tmax が強く低下**（tank2 上面が放熱面の 65%）。
 - Lx3 は中程度、**Lx1 はほとんど効かない**。5τ は Lx でほぼ不変。
