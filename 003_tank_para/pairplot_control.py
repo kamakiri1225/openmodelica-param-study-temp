@@ -88,10 +88,11 @@ def lhs(n, ranges, seed=1):
     return out
 
 
-def pairplot1(data, labels, color, path, title):
-    """単色 pairplot。下三角=散布, 対角=ヒスト, 上三角=相関係数(定数列は—)。"""
+def pairplot1(data, labels, cvals, clabel, path, title):
+    """pairplot。点の色 = cvals(発熱量Q)。下三角=散布, 対角=ヒスト, 上三角=相関係数。"""
     m = len(labels)
     fig, axes = plt.subplots(m, m, figsize=(3.3 * m, 3.3 * m))
+    sc = None
     for i in range(m):
         for j in range(m):
             ax = axes[i, j]
@@ -108,9 +109,10 @@ def pairplot1(data, labels, color, path, title):
                             transform=ax.transAxes, fontweight="bold", fontsize=13 + abs(r) * 20)
                 ax.set_xticks([]); ax.set_yticks([]); continue
             if i == j:
-                ax.hist(data[:, i], bins=18, color=color, alpha=0.7)
+                ax.hist(data[:, i], bins=18, color="0.7", alpha=0.8)
             else:
-                ax.scatter(data[:, j], data[:, i], c=color, s=16, alpha=0.6, edgecolor="none")
+                sc = ax.scatter(data[:, j], data[:, i], c=cvals, cmap="viridis",
+                                s=18, alpha=0.75, edgecolor="none")
             if i == m - 1:
                 ax.set_xlabel(labels[j], fontsize=15)
             else:
@@ -120,6 +122,9 @@ def pairplot1(data, labels, color, path, title):
             elif j != 0:
                 ax.set_yticklabels([])
             ax.tick_params(labelsize=11)
+    fig.subplots_adjust(right=0.9)
+    cax = fig.add_axes([0.92, 0.15, 0.015, 0.7])
+    cbar = fig.colorbar(sc, cax=cax); cbar.set_label(clabel, fontsize=16); cbar.ax.tick_params(labelsize=12)
     fig.suptitle(title, fontsize=20, y=0.93)
     plt.savefig(path, dpi=130, bbox_inches="tight")
     plt.close()
@@ -152,9 +157,9 @@ def main():
 
     data_off = np.column_stack([Q, h_air, Tair, V, Ar, level, dT_off, tau5])
     data_on = np.column_stack([Q, h_air, Tair, V, Ar, level, dT_on, tau5])
-    pairplot1(data_off, labels, "tab:red", os.path.join(IMG, "pairplot_control_off.png"),
+    pairplot1(data_off, labels, Q, "発熱量Q [W]", os.path.join(IMG, "pairplot_control_off.png"),
               "温度管理なし pairplot（%d ケース, 上三角=相関係数）" % n)
-    pairplot1(data_on, labels, "tab:blue", os.path.join(IMG, "pairplot_control_on.png"),
+    pairplot1(data_on, labels, Q, "発熱量Q [W]", os.path.join(IMG, "pairplot_control_on.png"),
               "温度管理あり pairplot（目標=外気温+冷却上限3500W, %d ケース）" % n)
     print("温度管理なし %d ケース, あり %d ケース（計 %d）" % (n, n, 2 * n))
     print("なし: ΔT=%.1f〜%.1f K / あり: ΔT=%.1f〜%.1f K (冷却上限%.0fW超で上昇)" % (dT_off.min(), dT_off.max(), dT_on.min(), dT_on.max(), Qcool_max))
