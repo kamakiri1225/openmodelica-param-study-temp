@@ -7,7 +7,7 @@
 
 出力:
   - 端末にフィット結果 (h_air, level, および面積係数 fA)
-  - docs/img/fig005_fit.png  (実験・ベース・フィットの重ね描き)
+  - docs/img/001/fit_air_only.png  (実験・ベース・フィットの重ね描き)
 """
 import os
 import glob
@@ -34,7 +34,7 @@ for cand in ["~/.fonts/NotoSansCJKjp-Regular.otf",
 matplotlib.rcParams["axes.unicode_minus"] = False
 
 HERE = os.path.dirname(__file__)
-IMG = os.path.join(HERE, "img")
+IMG = os.path.join(HERE, "img", "001")   # 合わせこみ(001)の図
 os.makedirs(IMG, exist_ok=True)
 
 # ---- 実験データ (eva5) ----
@@ -107,8 +107,17 @@ fA, lvB = rB.x
 print("FIT (面積) : fA=%.3f(面積%.0f%%) level=%.4f  -> 同じUA/RMSE=%.3f"
       % (fA, fA * 100, lvB, rmse(curve(time_s, fA=fA, level=lvB))))
 
+# ---- フィット(airのみ): heatCeffToAir のみ (level=0.128 固定, Q=610固定) ----
+rAir = least_squares(lambda x: curve(time_s, h_air=x[0], level=0.128) - exp_mean,
+                     [8], bounds=([2], [20]))
+hair = rAir.x[0]
+UAair = UA_of(hair, 10, 80, 0.128)
+print("FIT (airのみ): h_air=%.2f level=0.128固定  -> UA=%.2f Tfin=%.2f tau=%.2fh RMSE=%.3f"
+      % (hair, UAair, Tair + Q / UAair, C_of(0.128) / UAair / 3600,
+         rmse(curve(time_s, h_air=hair, level=0.128))))
+
 # ============================================================
-# 図: 実験 vs ベース vs フィット
+# 図: 実験 vs ベース vs airのみフィット
 # ============================================================
 H = 3600.0
 tt = np.linspace(0, 200000, 600)
@@ -117,17 +126,42 @@ for s in sensors:
     ax.plot(time_s / H, s, "o", markersize=3, alpha=0.3, color="gray")
 ax.plot(time_s / H, exp_mean, "ks", markersize=5, label="実験 4センサ平均")
 ax.plot(tt / H, curve(tt), "-", color="tab:blue", linewidth=2.0,
+        label="ベース (h_air=10)  RMSE=%.2f" % rmse(base))
+ax.plot(tt / H, curve(tt, h_air=hair, level=0.128), "-", color="tab:red", linewidth=2.4,
+        label="airのみフィット (heatCeffToAir=%.2f)  RMSE=%.2f"
+              % (hair, rmse(curve(time_s, h_air=hair, level=0.128))))
+ax.set_xlabel("Time [h]", fontsize=12)
+ax.set_ylabel("Temperature [degC]", fontsize=12)
+ax.set_xlim(0, 200000 / H)
+ax.set_ylim(23, 42)
+ax.grid(True, alpha=0.4)
+ax.legend(fontsize=9, loc="lower right")
+ax.set_title("airのみで合わせ込み（heatCeffToAir だけ調整, level=0.128・Q=610固定）")
+plt.tight_layout()
+out = os.path.join(IMG, "fit_air_only.png")
+plt.savefig(out, dpi=150, bbox_inches="tight")
+print("\nsaved:", out)
+
+# ============================================================
+# 図: air + 水位 の良好フィット (RMSE 0.24)
+# ============================================================
+fig, ax = plt.subplots(figsize=(9.5, 5.8))
+for s in sensors:
+    ax.plot(time_s / H, s, "o", markersize=3, alpha=0.3, color="gray")
+ax.plot(time_s / H, exp_mean, "ks", markersize=5, label="実験 4センサ平均")
+ax.plot(tt / H, curve(tt), "-", color="tab:blue", linewidth=2.0,
         label="ベース (h_air=10, level=0.128)  RMSE=%.2f" % rmse(base))
 ax.plot(tt / H, curve(tt, h_air=ha, level=lv), "-", color="tab:red", linewidth=2.4,
-        label="フィット (h_air=%.1f, level=%.3f)  RMSE=%.2f" % (ha, lv, rmse(curve(time_s, h_air=ha, level=lv))))
+        label="フィット (h_air=%.2f, level=%.3f)  RMSE=%.2f"
+              % (ha, lv, rmse(curve(time_s, h_air=ha, level=lv))))
 ax.set_xlabel("Time [h]", fontsize=12)
 ax.set_ylabel("Temperature [degC]", fontsize=12)
 ax.set_xlim(0, 200000 / H)
 ax.set_ylim(23, 40)
 ax.grid(True, alpha=0.4)
 ax.legend(fontsize=9, loc="lower right")
-ax.set_title("実機に合わせるパラメータ探索（集中定数フィット, Q=610固定）")
+ax.set_title("air＋水位で合わせ込み（heatCeffToAir・level_start 調整, Q=610固定）")
 plt.tight_layout()
-out = os.path.join(IMG, "fig005_fit.png")
-plt.savefig(out, dpi=150, bbox_inches="tight")
-print("\nsaved:", out)
+out6 = os.path.join(IMG, "fit_air_level.png")
+plt.savefig(out6, dpi=150, bbox_inches="tight")
+print("saved:", out6)

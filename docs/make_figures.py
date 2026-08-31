@@ -42,7 +42,10 @@ matplotlib.rcParams["axes.unicode_minus"] = False
 
 HERE = os.path.dirname(__file__)
 IMG = os.path.join(HERE, "img")
-os.makedirs(IMG, exist_ok=True)
+IMG1 = os.path.join(IMG, "001")   # 合わせこみ
+IMG2 = os.path.join(IMG, "002")   # パラスタ
+os.makedirs(IMG1, exist_ok=True)
+os.makedirs(IMG2, exist_ok=True)
 
 # ============================================================
 # 実験データ (eva5.py, 2026-07-09)
@@ -134,6 +137,7 @@ def finish(ax, title, fname):
     ax.set_title(title, fontsize=12)
     plt.tight_layout()
     out = os.path.join(IMG, fname)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
     plt.savefig(out, dpi=150, bbox_inches="tight")
     print("saved:", out)
     plt.close()
@@ -159,7 +163,7 @@ axR.set_xlim(0, time_s[-1] / H); axR.grid(True, alpha=0.4)
 axR.legend(fontsize=9, loc="upper right")
 axR.set_title("平均からの偏差 (場所差を拡大)")
 plt.tight_layout()
-_out = os.path.join(IMG, "fig000_exp_by_location.png")
+_out = os.path.join(IMG1, "exp_by_location.png")
 plt.savefig(_out, dpi=150, bbox_inches="tight"); plt.close()
 print("saved:", _out)
 
@@ -168,7 +172,7 @@ fig, ax = plt.subplots(figsize=(9, 5.5))
 plot_exp(ax)
 ax.plot(tt / H, temp(tt), "-", color="tab:red", linewidth=2.2,
         label="OM相当ベース (Q=610, h_air=10, level=0.128)")
-finish(ax, "001: 実験 vs OM相当ベースライン", "fig001_exp_vs_OM_base.png")
+finish(ax, "001: 実験 vs OM相当ベースライン", "001/exp_vs_OM_base.png")
 
 # ---- fig002: Q を変える ----
 fig, ax = plt.subplots(figsize=(9, 5.5))
@@ -176,7 +180,7 @@ plot_exp(ax, mean_only=True)
 ax.plot(tt / H, temp(tt), "--", color="black", linewidth=1.8, label="ベース Q=610")
 for Q, c in zip([550, 650, 690, 750], ["tab:blue", "tab:green", "tab:orange", "tab:red"]):
     ax.plot(tt / H, temp(tt, Q=Q), "-", color=c, linewidth=1.8, label=f"Q={Q} W")
-finish(ax, "Q(投入熱)の影響 — 飽和温度が上下", "fig002_vary_Q.png")
+finish(ax, "Q(投入熱)の影響 — 飽和温度が上下", "002/vary_Q.png")
 
 # ---- fig003: level を変える ----
 fig, ax = plt.subplots(figsize=(9, 5.5))
@@ -184,7 +188,7 @@ plot_exp(ax, mean_only=True)
 ax.plot(tt / H, temp(tt), "--", color="black", linewidth=1.8, label="ベース level=0.128")
 for lv, c in zip([0.09, 0.11, 0.14, 0.16], ["tab:blue", "tab:green", "tab:orange", "tab:red"]):
     ax.plot(tt / H, temp(tt, level=lv), "-", color=c, linewidth=1.8, label=f"level={lv:.2f} m")
-finish(ax, "level(水量)の影響 — 応答の速さ(時定数)が変化", "fig003_vary_level.png")
+finish(ax, "level(水量)の影響 — 応答の速さ(時定数)が変化", "002/vary_level.png")
 
 # ---- fig004: h_air を変える ----
 fig, ax = plt.subplots(figsize=(9, 5.5))
@@ -192,6 +196,6 @@ plot_exp(ax, mean_only=True)
 ax.plot(tt / H, temp(tt), "--", color="black", linewidth=1.8, label="ベース h_air=10")
 for h, c in zip([6, 8, 14, 18], ["tab:blue", "tab:green", "tab:orange", "tab:red"]):
     ax.plot(tt / H, temp(tt, h_air=h), "-", color=c, linewidth=1.8, label=f"h_air={h}")
-finish(ax, "h_air(外気放熱)の影響 — 飽和温度と速さの両方", "fig004_vary_h_air.png")
+finish(ax, "h_air(外気放熱)の影響 — 飽和温度と速さの両方", "002/vary_h_air.png")
 
 print("\n完了: docs/img/ に4枚出力しました。")

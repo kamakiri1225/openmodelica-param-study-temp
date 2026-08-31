@@ -14,7 +14,7 @@ Windows の Python + OpenModelica(omc.exe) で回す自動パラメータスタ�
   `level_start=0.0755`）。飽和温度は放熱 UA を約12%減、立ち上がりは実効水量を
   409→241 kg（水位 128→76 mm 相当）で合う。幾何寸法はレイアウト図と一致を確認済み。
 
-![実機フィット](docs/img/fig005_fit.png)
+![実機フィット](docs/img/001/fit_air_level.png)
 
 ## 構成
 
