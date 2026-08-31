@@ -120,25 +120,26 @@ def pareto_front(P):
 # ============================================================
 def pairplot(data, labels, pareto, path):
     m = len(labels)
-    fig, axes = plt.subplots(m, m, figsize=(2.4 * m, 2.4 * m))
+    fig, axes = plt.subplots(m, m, figsize=(3.4 * m, 3.4 * m))
     for i in range(m):
         for j in range(m):
             ax = axes[i, j]
             if i == j:
                 ax.hist(data[:, i], bins=25, color="tab:blue", alpha=0.7)
             else:
-                ax.scatter(data[~pareto, j], data[~pareto, i], s=8, alpha=0.35,
+                ax.scatter(data[~pareto, j], data[~pareto, i], s=16, alpha=0.35,
                            color="tab:blue", label="全ケース")
-                ax.scatter(data[pareto, j], data[pareto, i], s=22, alpha=0.9,
-                           color="tab:red", edgecolor="k", linewidth=0.3, label="パレート")
+                ax.scatter(data[pareto, j], data[pareto, i], s=55, alpha=0.95,
+                           color="tab:red", edgecolor="k", linewidth=0.5,
+                           label="パレート最適（実験目標に最も近い）")
             if i == m - 1:
-                ax.set_xlabel(labels[j], fontsize=10)
+                ax.set_xlabel(labels[j], fontsize=16)
             if j == 0:
-                ax.set_ylabel(labels[i], fontsize=10)
-            ax.tick_params(labelsize=7)
-    axes[0, m - 1].legend(fontsize=8, loc="upper right")
-    fig.suptitle("パラメータスタディ pairplot（赤=パレート最適, 目的: τ・Tmax を実験に一致）",
-                 fontsize=12, y=1.0)
+                ax.set_ylabel(labels[i], fontsize=16)
+            ax.tick_params(labelsize=12)
+    axes[0, m - 1].legend(fontsize=14, loc="upper right", markerscale=1.4)
+    fig.suptitle("パラメータスタディ pairplot（赤=パレート最適点, 目的: τ・Tmax を実験に一致）",
+                 fontsize=20, y=1.005)
     plt.tight_layout()
     plt.savefig(path, dpi=140, bbox_inches="tight")
     plt.close()
