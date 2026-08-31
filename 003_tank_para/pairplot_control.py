@@ -4,7 +4,7 @@
 設計因子（LHS）: 発熱量Q, 外気側熱伝達率 heatCeffToAir, 水位 level, 外気温 Tair。
 各設計点について 2 条件を評価する:
   - 温度管理なし: 水温は Tair + Q/UA まで上昇（温度上昇 ΔT = Q/UA）
-  - 温度管理あり: PIDが目標=外気温に保持 → 水温=外気温（ΔT ≒ 0。15℃なら15℃）
+  - 温度管理あり: 目標=外気温。冷却上限(3500W)まで水温=外気温, 超過分は ΔT=(Q-3500)/UA
 pairplot は点を **温度管理あり(青)／なし(赤)** で色分けする。
 
   python pairplot_control.py [--n 250]
@@ -131,14 +131,16 @@ def main():
     args = ap.parse_args()
     n = args.n
 
-    X = lhs(n, [(550.0, 4000.0), (5.0, 12.0), (0.05, 0.16), (15.0, 35.0)])
+    X = lhs(n, [(400.0, 4000.0), (5.0, 12.0), (0.05, 0.16), (15.0, 35.0)])
     Q, h_air, level, Tair = X.T
     UA = np.array([ua(h_air[k], level[k]) for k in range(n)])
     tau5 = np.array([5 * cap(level[k]) / UA[k] / 3600.0 for k in range(n)])
 
-    # なし: ΔT=Q/UA、あり: ΔT=0（目標=外気温）
+    # なし: ΔT=Q/UA
+    # あり: 目標=外気温。冷却上限 Qcool_max まではΔT=0、超えると ΔT=(Q-Qcool_max)/UA
+    Qcool_max = 3500.0   # ダイキン3.5kW
     dT_off = Q / UA
-    dT_on = np.zeros(n)
+    dT_on = np.maximum(0.0, (Q - Qcool_max) / UA)
 
     # 2条件を積む
     def stack(a_off, a_on):
@@ -153,9 +155,9 @@ def main():
     pairplot1(data_off, labels, "tab:red", os.path.join(IMG, "pairplot_control_off.png"),
               "温度管理なし pairplot（%d ケース, 上三角=相関係数）" % n)
     pairplot1(data_on, labels, "tab:blue", os.path.join(IMG, "pairplot_control_on.png"),
-              "温度管理あり pairplot（目標=外気温, %d ケース／ΔT=0のため相関は—）" % n)
+              "温度管理あり pairplot（目標=外気温+冷却上限3500W, %d ケース）" % n)
     print("温度管理なし %d ケース, あり %d ケース（計 %d）" % (n, n, 2 * n))
-    print("なし: ΔT=%.1f〜%.1f K (Q/UA)  /  あり: ΔT=0 (水温=外気温)" % (dT_off.min(), dT_off.max()))
+    print("なし: ΔT=%.1f〜%.1f K / あり: ΔT=%.1f〜%.1f K (冷却上限%.0fW超で上昇)" % (dT_off.min(), dT_off.max(), dT_on.min(), dT_on.max(), Qcool_max))
     print("saved:", os.path.join(IMG, "pairplot_control_off.png"), "/ _on.png")
 
 
