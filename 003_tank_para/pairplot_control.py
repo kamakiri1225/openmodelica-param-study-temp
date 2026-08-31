@@ -152,11 +152,13 @@ def main():
         return np.concatenate([a_off, a_on])
     V = np.array([volume_L(level[k]) for k in range(n)])
     Ar = np.array([area_total(level[k]) for k in range(n)])
+    Tfin_off = Tair + dT_off     # 最終水温(絶対) = 外気温 + 温度上昇
+    Tfin_on = Tair + dT_on
     labels = ["発熱量Q [W]", "heatCeffToAir", "外気温 [degC]", "体積 [L]",
-              "表面積 [m²]", "水位 [m]", "温度上昇 ΔT [K]", "5τ [h]"]
+              "表面積 [m²]", "水位 [m]", "温度上昇 ΔT [K]", "最終水温 [degC]", "5τ [h]"]
 
-    data_off = np.column_stack([Q, h_air, Tair, V, Ar, level, dT_off, tau5])
-    data_on = np.column_stack([Q, h_air, Tair, V, Ar, level, dT_on, tau5])
+    data_off = np.column_stack([Q, h_air, Tair, V, Ar, level, dT_off, Tfin_off, tau5])
+    data_on = np.column_stack([Q, h_air, Tair, V, Ar, level, dT_on, Tfin_on, tau5])
     pairplot1(data_off, labels, Q, "発熱量Q [W]", os.path.join(IMG, "pairplot_control_off.png"),
               "温度管理なし pairplot（%d ケース, 上三角=相関係数）" % n)
     pairplot1(data_on, labels, Q, "発熱量Q [W]", os.path.join(IMG, "pairplot_control_on.png"),
