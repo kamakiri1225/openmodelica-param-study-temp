@@ -209,7 +209,15 @@ def pairplot(data, labels, cvals, clabel, path, title):
             ax = axes[i, j]
             ax.set_box_aspect(1)
             if j > i:
-                ax.axis("off"); continue
+                # 上三角: 相関係数 r を表示（|r|で文字サイズ, 符号で背景色 赤=正/青=負）
+                r = float(np.corrcoef(data[:, j], data[:, i])[0, 1])
+                ax.set_xticks([]); ax.set_yticks([])
+                col = matplotlib.cm.RdBu_r((r + 1) / 2)
+                ax.set_facecolor((col[0], col[1], col[2], 0.25))
+                ax.text(0.5, 0.5, "%.2f" % r, ha="center", va="center",
+                        transform=ax.transAxes, fontweight="bold",
+                        fontsize=13 + abs(r) * 20)
+                continue
             if i == j:
                 ax.hist(data[:, i], bins=18, color="0.75", edgecolor="w")
             else:
