@@ -41,3 +41,30 @@ python param_study.py pareto --csv results.csv
 ```
 
 必要な Python パッケージ: `numpy pandas matplotlib scipy`（pairplot 用に任意で `seaborn`）。
+
+## ドキュメントの図を再現する（集中定数モデル・Python のみ、OM 不要）
+
+`docs/` の図はすべて Python スクリプトで再生成できる（数秒）。リポジトリ直下で:
+
+```bash
+python docs/lumped_check.py        # 集中定数の一次確認（数値のみ）
+python docs/make_figures.py        # 001: 場所差 / ベース比較 / Q・level・h_air 影響
+python docs/fit_params.py          # 001: 合わせこみ図（fit_air_only / fit_air_level 等, 要 scipy）
+python docs/study_pareto_demo.py   # 002: vary_size / influence / objective_map / pairplot(*)
+```
+
+`study_pareto_demo.py` が出す図（`docs/img/002/`）:
+- `pairplot.png` … 設計変数＋各熱流（発熱量／上面→大気／側底→地面）＋体積＋Tmax・5τ
+- `pairplot_Lx.png` … タンク別 Lx を個別に振ったスタディ
+- `influence.png` … 因子ごとの影響（Tmax・5τ × 各因子）
+- `vary_size.png` … タンク寸法拡大（容量増）の効果
+- `objective_map.png` … 目的空間 5τ–Tmax
+
+> 画面表示なしで走らせる場合は `MPLBACKEND=Agg` を付ける（例:
+> `MPLBACKEND=Agg python docs/study_pareto_demo.py`）。
+
+## 実機 OpenModelica で回す
+
+集中定数は代理。実際に omc.exe を回す手順は
+**[docs/003_openmodelica_paramstudy_howto.md](docs/003_openmodelica_paramstudy_howto.md)** を参照
+（WSL からの実行、`-override` での因子振り、実行時間の目安など）。

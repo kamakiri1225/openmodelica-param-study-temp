@@ -94,6 +94,33 @@ def cap(level, size=1.0, s1=1.0, s2=1.0, s3=1.0):
     return (a1 * level + a2 * level + a3 * 0.9 * level) * rho_w * cp_w
 
 
+def ua_split(h_air, level, size=1.0, s1=1.0, s2=1.0, s3=1.0, h_in=10.0, kground=80.0):
+    """(UA_air=上面→大気, UA_ground=側/底→地面) を返す。"""
+    lx1, ly1, lx2, ly2, lx3, ly3, a1, a2, a3 = _dims(size, s1, s2, s3)
+    UA_air = h_air * (a1 + a2 + a3)
+
+    def g(Ain, Ac, Ag):
+        return 1 / (1 / (h_in * Ain) + 1 / (Ac * kground / th) + 1 / (h_air * Ag))
+    u1 = g(a1 + ly1 * level, a1 + lx1 * level + ly1 * level, a1 + ly1 * level)
+    a2in = a2 + (ly2 + lx2) * level
+    u2 = g(a2in, a2 + (lx2 + ly2) * level, a2in)
+    a3g = a3 + (lx3 + ly3) * level
+    u3 = g(a3g, a3g, a3g)
+    return UA_air, (u1 + u2 + u3)
+
+
+def volume_L(level, size=1.0, s1=1.0, s2=1.0, s3=1.0):
+    _, _, _, _, _, _, a1, a2, a3 = _dims(size, s1, s2, s3)
+    return (a1 * level + a2 * level + a3 * 0.9 * level) * 1000.0   # m3 -> L
+
+
+def heat_flows(Q, h_air, level, size=1.0):
+    """定常での各熱流 [W]: (上面→大気, 側/底→地面)。和 = Q。"""
+    UA_air, UA_g = ua_split(h_air, level, size)
+    dT = Q / (UA_air + UA_g)
+    return UA_air * dT, UA_g * dT
+
+
 def responses(Q, h_air, level, size=1.0, s1=1.0, s2=1.0, s3=1.0):
     UA = ua(h_air, level, size, s1, s2, s3)
     Tmax = Tair + Q / UA
@@ -230,6 +257,19 @@ def main():
     plt.savefig(out, dpi=140, bbox_inches="tight"); plt.close()
     print("saved:", out)
 
+    # ---- リッチ pairplot: 設計変数(Q,h,水位,体積) + 各熱流 + 応答 ----
+    Vol = np.array([volume_L(level[k], size[k]) for k in range(args.n)])
+    Qtop = np.empty(args.n); Qgnd = np.empty(args.n)
+    for k in range(args.n):
+        Qtop[k], Qgnd[k] = heat_flows(Q[k], h_air[k], level[k], size[k])
+    rich = np.column_stack([Q, h_air, level, Vol, Qtop, Qgnd, Tmax, tset])
+    rlabels = ["発熱量Q [W]", "heatCeffToAir", "水位 [m]", "体積 [L]",
+               "上面→大気 [W]", "側/底→地面 [W]", "Tmax [degC]", "5τ [h]"]
+    pairplot(rich, rlabels, Tmax, "Tmax [degC]",
+             os.path.join(IMG2, "pairplot.png"),
+             "pairplot（設計変数＋各熱流＋体積, 色 = Tmax／発熱量 = 上面放熱＋地面放熱）")
+    print("saved:", os.path.join(IMG2, "pairplot.png"))
+
     # ---- タンク別 Lx 個別スタディの pairplot ----
     Xd = lhs(args.n, [(0.7, 1.4), (0.7, 1.4), (0.7, 1.4)], seed=7)
     sL1, sL2, sL3 = Xd.T
@@ -239,11 +279,9 @@ def main():
     data = np.column_stack([sL1, sL2, sL3, Tm, tsd])
     labels = ["Lx1 倍率", "Lx2 倍率", "Lx3 倍率", "Tmax [degC]", "5τ [h]"]
     pairplot(data, labels, Tm, "Tmax [degC]",
-             os.path.join(IMG2, "pairplot.png"),
+             os.path.join(IMG2, "pairplot_Lx.png"),
              "タンク別 Lx を個別に変えたスタディ pairplot（色 = Tmax, 時間指標 = 5τ）")
-    print("saved:", os.path.join(IMG2, "pairplot.png"))
-    print("Lx2(tank2) を 0.7->1.4 倍: Tmax %.1f->%.1f℃" %
-          (responses(QF, HF, LF, s2=1.4)[0], responses(QF, HF, LF, s2=0.7)[0]))
+    print("saved:", os.path.join(IMG2, "pairplot_Lx.png"))
 
 
 if __name__ == "__main__":
