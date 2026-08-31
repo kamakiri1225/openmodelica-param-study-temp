@@ -192,7 +192,23 @@ axA.plot(tt / H, curve(tt), "-", color="tab:blue", linewidth=1.8,
 axA.plot(tt / H, Tmean_tanks, "-", color="tab:red", linewidth=2.4,
          label="OM 平均(tank1-3)  RMSE=%.2f"
                % np.sqrt(np.mean((np.interp(time_s, tt, Tmean_tanks) - exp_mean) ** 2)))
-axA.set_title("平均どうし（実験4点平均 vs OM 3タンク平均）")
+# τ・Tmax の決め方: τ=63.2%到達(=C/UA), Tmax=5τ(整定, 99.3%到達)で読む
+UAfit = UA_of(ha, 10, 80, lv)
+tau_fit = C_of(lv) / UAfit / 3600.0          # 時定数 [h]
+t5 = 5 * tau_fit                             # 整定時間 5τ [h]
+lvl632 = Tair + 0.632 * (Q / UAfit)          # 63.2% 到達温度
+Tmax5 = Tair + (Q / UAfit) * (1 - np.exp(-5))  # 5τ 時点の温度 = 実質最大
+# τ (63.2%到達)
+axA.axvline(tau_fit, color="purple", ls="-.", lw=1.7)
+axA.plot(tau_fit, lvl632, "o", color="purple", ms=7)
+axA.text(tau_fit + 0.5, 24.6, "τ=%.1f h\n(63.2%%, =C/UA)" % tau_fit, fontsize=10, color="purple")
+# 5τ (整定) → 最大温度をここで読む
+axA.axvline(t5, color="green", ls="-.", lw=1.7)
+axA.axhline(Tmax5, color="0.4", ls=":", lw=1.2)
+axA.plot(t5, Tmax5, "o", color="green", ms=7)
+axA.text(t5 + 0.6, 33.2, "5τ=%.0f h で整定\nTmax=%.1f℃ (99.3%%到達)" % (t5, Tmax5),
+         fontsize=10, color="green")
+axA.set_title("平均どうし（τ=63.2%到達, Tmax=5τ整定で読む）")
 axA.set_xlabel("Time [h]"); axA.set_ylabel("Temperature [degC]")
 axA.set_xlim(0, 200000 / H); axA.set_ylim(23, 40); axA.grid(True, alpha=0.4)
 axA.legend(fontsize=9, loc="lower right")
@@ -215,40 +231,54 @@ plt.savefig(out6, dpi=150, bbox_inches="tight")
 print("saved:", out6)
 
 # ============================================================
-# 図: 実測 と OM の「平均からの偏差」を同一縦軸で比較
-#     (OM絶対値は tank が重なり冗長なので省略。縦軸を揃えて公平に比較)
+# 図: 実測(上段) と OM(下段) を同形式で比較
+#     左列=温度の推移(絶対値), 右列=平均からの偏差(縦軸は実測・OMで統一)
 # ============================================================
 Tmean3 = (T1 + T2 + T3) / 3.0
 scol2 = {"4-16": "tab:blue", "4-17": "tab:orange", "4-18": "tab:green", "4-19": "tab:red"}
 tcol = {"tank1": "tab:blue", "tank2": "tab:orange", "tank3": "tab:green"}
 tank_spread = max(T1[-1], T2[-1], T3[-1]) - min(T1[-1], T2[-1], T3[-1])
 DEV = 0.6   # 偏差の縦軸レンジ [degC] (実測・OM 共通)
-TS = 16
+TS = 15
 
-figD, (aE, aO) = plt.subplots(1, 2, figsize=(17, 7), sharey=True)
+figD, ax4 = plt.subplots(2, 2, figsize=(16, 11))
 
-# 実測: 平均からの偏差
+# 上段左: 実測 温度の推移
 for name, s, c in zip(scol2, sensors, scol2.values()):
-    aE.plot(time_s / H, s - exp_mean, "-o", color=c, markersize=6, linewidth=2.0, label=name)
-aE.axhline(0, color="k", lw=1.2, ls="--")
-aE.set_ylabel("平均からの偏差 [degC]", fontsize=TS)
-aE.set_title("実測 4センサ 場所ごとの偏差（振れ幅 ±0.5℃）", fontsize=TS)
-aE.legend(fontsize=13, loc="upper right")
+    ax4[0, 0].plot(time_s / H, s, "-o", color=c, markersize=5, linewidth=1.6, label=name)
+ax4[0, 0].plot(time_s / H, exp_mean, "k--", linewidth=1.3, label="4点平均")
+ax4[0, 0].set_ylabel("Temperature [degC]", fontsize=TS); ax4[0, 0].set_ylim(23, 40)
+ax4[0, 0].set_title("実測 温度の推移（4センサ）", fontsize=TS)
+ax4[0, 0].legend(fontsize=11, loc="lower right")
+# 上段右: 実測 偏差
+for name, s, c in zip(scol2, sensors, scol2.values()):
+    ax4[0, 1].plot(time_s / H, s - exp_mean, "-o", color=c, markersize=5, linewidth=1.6, label=name)
+ax4[0, 1].axhline(0, color="k", lw=1.1, ls="--")
+ax4[0, 1].set_ylabel("平均からの偏差 [degC]", fontsize=TS); ax4[0, 1].set_ylim(-DEV, DEV)
+ax4[0, 1].set_title("実測 平均からの偏差（場所差 ±0.5℃）", fontsize=TS)
+ax4[0, 1].legend(fontsize=11, loc="upper right")
 
-# OM: 平均からの偏差 (同一縦軸)
+# 下段左: OM 温度の推移
 for name, T, c in zip(tcol, [T1, T2, T3], tcol.values()):
-    aO.plot(tt / H, T - Tmean3, "-", color=c, linewidth=2.6, label=name)
-aO.axhline(0, color="k", lw=1.2, ls="--")
-aO.set_title("OM tank1/2/3 の偏差（同一縦軸だとほぼ平坦＝均一, 実差 %.3f℃）" % tank_spread,
-             fontsize=TS)
-aO.legend(fontsize=13, loc="upper right")
+    ax4[1, 0].plot(tt / H, T, "-", color=c, linewidth=2.0, label=name)
+ax4[1, 0].plot(tt / H, Tmean3, "k--", linewidth=1.3, label="3タンク平均")
+ax4[1, 0].set_xlabel("Time [h]", fontsize=TS); ax4[1, 0].set_ylabel("Temperature [degC]", fontsize=TS)
+ax4[1, 0].set_ylim(23, 40)
+ax4[1, 0].set_title("OM 温度の推移（tank1/2/3）", fontsize=TS)
+ax4[1, 0].legend(fontsize=11, loc="lower right")
+# 下段右: OM 偏差 (縦軸を実測と統一)
+for name, T, c in zip(tcol, [T1, T2, T3], tcol.values()):
+    ax4[1, 1].plot(tt / H, T - Tmean3, "-", color=c, linewidth=2.2, label=name)
+ax4[1, 1].axhline(0, color="k", lw=1.1, ls="--")
+ax4[1, 1].set_xlabel("Time [h]", fontsize=TS); ax4[1, 1].set_ylabel("平均からの偏差 [degC]", fontsize=TS)
+ax4[1, 1].set_ylim(-DEV, DEV)
+ax4[1, 1].set_title("OM 平均からの偏差（同一縦軸でほぼ平坦＝均一, 実差 %.3f℃）" % tank_spread, fontsize=TS)
+ax4[1, 1].legend(fontsize=11, loc="upper right")
 
-for a in (aE, aO):
-    a.set_xlabel("Time [h]", fontsize=TS)
-    a.set_xlim(0, 200000 / H); a.set_ylim(-DEV, DEV)
-    a.grid(True, alpha=0.4); a.tick_params(labelsize=13)
-figD.suptitle("平均からの偏差 比較（縦軸を統一）: 実測は場所で ±0.5℃, OM タンク間はほぼ 0",
-              fontsize=TS + 3, y=1.02)
+for a in ax4.ravel():
+    a.set_xlim(0, 200000 / H); a.grid(True, alpha=0.4); a.tick_params(labelsize=12)
+figD.suptitle("温度の推移（左）と平均からの偏差（右, 縦軸統一）: 実測=場所差±0.5℃, OM=タンク間ほぼ0",
+              fontsize=TS + 3, y=1.005)
 plt.tight_layout()
 outD = os.path.join(IMG, "by_location_exp_vs_OM.png")
 plt.savefig(outD, dpi=150, bbox_inches="tight")
