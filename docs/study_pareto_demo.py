@@ -2,13 +2,15 @@
 """
 002 パラメータスタディ（集中定数モデル版）。
 
-時間の指標は「整定時間 5τ」(= 5×C/UA, 99.3%到達) を用いる（001 の fit 図と統一）。
+応答は **温度上昇 ΔT**（開始温度 T_START=24.5℃ からの上昇）と **整定時間 5τ**。
+設計因子に **外気温 Tair** を含む（同じ開始温度から、外気温を振った場合を見る）。
 
-図:
-  - vary_size.png     … タンク寸法(Lx,Ly)を一律 1.0→1.3 倍にしたときの水温
-  - influence.png     … 因子ごとの影響 2行(Tmax, 5τ) × 4列(Q,heatCeffToAir,level,size)
-  - objective_map.png … 目的空間 5τ–Tmax（色 = size）
-  - pairplot.png      … タンク別 Lx を個別に変えたスタディの pairplot（色 = Tmax）
+図（docs/img/002/）:
+  - vary_size.png     … タンク寸法(Lx,Ly)を 1.0→1.3 倍にしたときの水温
+  - influence.png     … 因子ごとの影響 2行(ΔT, 5τ) × 5列(Q,heatCeffToAir,level,size,外気温)
+  - objective_map.png … 目的空間 5τ–ΔT（色 = 外気温）
+  - pairplot.png      … 設計変数＋放熱面積＋体積＋ΔT・5τ（色 = ΔT, 上三角=相関係数）
+  - pairplot_Lx.png   … タンク別 Lx を個別に変えたスタディ
 
   python docs/study_pareto_demo.py [--n 300]
 """
@@ -41,7 +43,7 @@ HERE = os.path.dirname(__file__)
 IMG2 = os.path.join(HERE, "img", "002")
 os.makedirs(IMG2, exist_ok=True)
 
-# ---- 実験データ (eva5) と参考の (Tmax, 5τ) ----
+# ---- 実験データ (eva5) と参考の (ΔT, 5τ) ----
 time_s = np.array([0, 5263, 10526, 15789, 21053, 26316, 31579, 36842, 42105, 47368,
                    52632, 57895, 63158, 68421, 73684, 78947, 84211, 89474, 94737, 100000], float)
 sensors = np.array([
@@ -50,14 +52,14 @@ sensors = np.array([
     [24.2, 28.4, 30.5, 31.9, 33.0, 34.0, 34.8, 35.5, 36.0, 36.4, 36.8, 37.1, 37.35, 37.55, 37.70, 37.65, 37.75, 37.80, 37.85, 37.90],
     [23.7, 27.6, 29.6, 31.0, 32.2, 33.2, 34.1, 34.8, 35.4, 35.8, 36.2, 36.5, 36.8, 37.0, 37.15, 37.20, 37.30, 37.40, 37.45, 37.50]])
 exp_mean = sensors.mean(0)
-Tair = 24.5
+T_START = 24.5        # 開始（初期）水温 [degC] — 全ケース共通
+Tair_base = 24.5      # 外気温の基準（実験条件）
 Tmax_exp = float(exp_mean[-1])
-tau_exp = float(np.interp(Tair + 0.632 * (Tmax_exp - Tair), exp_mean, time_s)) / 3600.0
-tset_exp = 5 * tau_exp   # 整定時間 5τ [h]
+dT_exp = Tmax_exp - T_START                      # 実験の温度上昇 [K]
+tau_exp = float(np.interp(T_START + 0.632 * (Tmax_exp - T_START), exp_mean, time_s)) / 3600.0
+tset_exp = 5 * tau_exp                            # 整定時間 5τ [h]
 
 # ---- 集中定数モデル ----
-# size    : Lx,Ly を一律にスケール
-# s1,s2,s3: 各タンクの Lx (Lx1_1 / Lx2_1,Lx2_2 / Lx3_1) を個別スケール
 rho_w, cp_w = 1000.0, 4186.0
 th = 2.3 / 1000
 Lx1_1, Ly1_1 = 0.903, 0.479
@@ -89,13 +91,7 @@ def ua(h_air, level, size=1.0, s1=1.0, s2=1.0, s3=1.0, h_in=10.0, kground=80.0):
     return UA_air + u1 + u2 + u3
 
 
-def cap(level, size=1.0, s1=1.0, s2=1.0, s3=1.0):
-    _, _, _, _, _, _, a1, a2, a3 = _dims(size, s1, s2, s3)
-    return (a1 * level + a2 * level + a3 * 0.9 * level) * rho_w * cp_w
-
-
 def ua_split(h_air, level, size=1.0, s1=1.0, s2=1.0, s3=1.0, h_in=10.0, kground=80.0):
-    """(UA_air=上面→大気, UA_ground=側/底→地面) を返す。"""
     lx1, ly1, lx2, ly2, lx3, ly3, a1, a2, a3 = _dims(size, s1, s2, s3)
     UA_air = h_air * (a1 + a2 + a3)
 
@@ -109,29 +105,38 @@ def ua_split(h_air, level, size=1.0, s1=1.0, s2=1.0, s3=1.0, h_in=10.0, kground=
     return UA_air, (u1 + u2 + u3)
 
 
+def cap(level, size=1.0, s1=1.0, s2=1.0, s3=1.0):
+    _, _, _, _, _, _, a1, a2, a3 = _dims(size, s1, s2, s3)
+    return (a1 * level + a2 * level + a3 * 0.9 * level) * rho_w * cp_w
+
+
 def volume_L(level, size=1.0, s1=1.0, s2=1.0, s3=1.0):
     _, _, _, _, _, _, a1, a2, a3 = _dims(size, s1, s2, s3)
-    return (a1 * level + a2 * level + a3 * 0.9 * level) * 1000.0   # m3 -> L
+    return (a1 * level + a2 * level + a3 * 0.9 * level) * 1000.0
 
 
-def heat_flows(Q, h_air, level, size=1.0):
-    """定常での各熱流 [W]: (上面→大気, 側/底→地面)。和 = Q。"""
-    UA_air, UA_g = ua_split(h_air, level, size)
-    dT = Q / (UA_air + UA_g)
-    return UA_air * dT, UA_g * dT
+def areas_top_ground(level, size=1.0, s1=1.0, s2=1.0, s3=1.0):
+    lx1, ly1, lx2, ly2, lx3, ly3, a1, a2, a3 = _dims(size, s1, s2, s3)
+    A_top = a1 + a2 + a3
+    A_ground = (a1 + ly1 * level) + (a2 + (ly2 + lx2) * level) + (a3 + (lx3 + ly3) * level)
+    return A_top, A_ground
 
 
-def responses(Q, h_air, level, size=1.0, s1=1.0, s2=1.0, s3=1.0):
+def responses(Q, h_air, level, Tair=Tair_base, size=1.0, s1=1.0, s2=1.0, s3=1.0):
+    """温度上昇 ΔT [K]（開始 T_START からの上昇）と整定時間 5τ [h] を返す。"""
     UA = ua(h_air, level, size, s1, s2, s3)
-    Tmax = Tair + Q / UA
-    tset = 5 * cap(level, size, s1, s2, s3) / UA / 3600.0   # 整定時間 5τ [h]
-    return Tmax, tset
+    T_final = Tair + Q / UA
+    dT_rise = T_final - T_START
+    tset = 5 * cap(level, size, s1, s2, s3) / UA / 3600.0
+    return dT_rise, tset
 
 
-def temp_curve(t, Q, h_air, level, size=1.0):
+def temp_curve(t, Q, h_air, level, Tair=Tair_base, size=1.0):
+    """水温の時系列 [degC]。T(0)=T_START, T(∞)=Tair+Q/UA。"""
     UA = ua(h_air, level, size)
-    C = cap(level, size)
-    return Tair + (Q / UA) * (1 - np.exp(-t / (C / UA)))
+    tau = cap(level, size) / UA
+    Tinf = Tair + Q / UA
+    return Tinf + (T_START - Tinf) * np.exp(-t / tau)
 
 
 def lhs(n, ranges, seed=1):
@@ -153,9 +158,9 @@ def fig_vary_size():
     fig, ax = plt.subplots(figsize=(9.5, 6))
     ax.plot(time_s / H, exp_mean, "ks", markersize=5, label="実験 4センサ平均")
     for s, c in zip([1.0, 1.1, 1.2, 1.3], ["tab:blue", "tab:green", "tab:orange", "tab:red"]):
-        Tm, ts = responses(QF, HF, LF, size=s)
-        ax.plot(tt / H, temp_curve(tt, QF, HF, LF, s), "-", color=c, linewidth=2.2,
-                label="size=%.1f 倍 (Tmax=%.1f℃, 5τ=%.0fh)" % (s, Tm, ts))
+        dT, ts = responses(QF, HF, LF, size=s)
+        ax.plot(tt / H, temp_curve(tt, QF, HF, LF, size=s), "-", color=c, linewidth=2.2,
+                label="size=%.1f 倍 (ΔT=%.1fK, 5τ=%.0fh)" % (s, dT, ts))
     ax.set_xlabel("Time [h]"); ax.set_ylabel("Temperature [degC]")
     ax.set_xlim(0, 200000 / H); ax.set_ylim(23, 40); ax.grid(True, alpha=0.4)
     ax.legend(fontsize=11, loc="lower right")
@@ -170,29 +175,30 @@ def fig_influence():
     facs = [("Q [W]", 550, 720, QF, "Q"),
             ("heatCeffToAir", 5, 12, HF, "h"),
             ("level_start [m]", 0.05, 0.16, LF, "level"),
-            ("size (寸法倍率)", 0.9, 1.3, 1.0, "size")]
-    fig, ax = plt.subplots(2, 4, figsize=(18, 8.5))
+            ("size (寸法倍率)", 0.9, 1.3, 1.0, "size"),
+            ("外気温 Tair [degC]", 15, 35, Tair_base, "Tair")]
+    fig, ax = plt.subplots(2, 5, figsize=(20, 8))
     for j, (lab, lo, hi, fitv, key) in enumerate(facs):
         xs = np.linspace(lo, hi, 120)
-        Tm, ts = [], []
+        dT, ts = [], []
         for x in xs:
-            kw = dict(Q=QF, h_air=HF, level=LF, size=1.0)
-            kw[{"Q": "Q", "h": "h_air", "level": "level", "size": "size"}[key]] = x
-            T, t = responses(kw["Q"], kw["h_air"], kw["level"], size=kw["size"])
-            Tm.append(T); ts.append(t)
-        Tf, tf = responses(QF, HF, LF)
-        ax[0, j].plot(xs, Tm, "-", color="tab:red", linewidth=2.6)
-        ax[0, j].axhline(Tmax_exp, color="gray", ls="--", lw=1.2)
-        ax[0, j].plot(fitv, Tf, "ko", ms=8)
-        ax[0, j].set_title(lab, fontsize=16); ax[0, j].grid(True, alpha=0.4); ax[0, j].tick_params(labelsize=12)
+            kw = dict(Q=QF, h_air=HF, level=LF, Tair=Tair_base, size=1.0)
+            kw[{"Q": "Q", "h": "h_air", "level": "level", "size": "size", "Tair": "Tair"}[key]] = x
+            d, t = responses(kw["Q"], kw["h_air"], kw["level"], Tair=kw["Tair"], size=kw["size"])
+            dT.append(d); ts.append(t)
+        df, tf = responses(QF, HF, LF)
+        ax[0, j].plot(xs, dT, "-", color="tab:red", linewidth=2.6)
+        ax[0, j].axhline(dT_exp, color="gray", ls="--", lw=1.2)
+        ax[0, j].plot(fitv, df, "ko", ms=8)
+        ax[0, j].set_title(lab, fontsize=15); ax[0, j].grid(True, alpha=0.4); ax[0, j].tick_params(labelsize=11)
         ax[1, j].plot(xs, ts, "-", color="tab:blue", linewidth=2.6)
         ax[1, j].axhline(tset_exp, color="gray", ls="--", lw=1.2)
         ax[1, j].plot(fitv, tf, "ko", ms=8)
-        ax[1, j].set_xlabel(lab, fontsize=16); ax[1, j].grid(True, alpha=0.4); ax[1, j].tick_params(labelsize=12)
-    ax[0, 0].set_ylabel("最大温度 Tmax [degC]", fontsize=16)
-    ax[1, 0].set_ylabel("整定時間 5τ [h]", fontsize=16)
+        ax[1, j].set_xlabel(lab, fontsize=15); ax[1, j].grid(True, alpha=0.4); ax[1, j].tick_params(labelsize=11)
+    ax[0, 0].set_ylabel("温度上昇 ΔT [K]", fontsize=15)
+    ax[1, 0].set_ylabel("整定時間 5τ [h]", fontsize=15)
     fig.suptitle("因子の影響（各列＝その因子だけ変化, 他はフィット値固定／灰破線＝実験値・黒点＝フィット点）",
-                 fontsize=18, y=1.0)
+                 fontsize=17, y=1.0)
     plt.tight_layout()
     out = os.path.join(IMG2, "influence.png")
     plt.savefig(out, dpi=140, bbox_inches="tight"); plt.close()
@@ -200,7 +206,6 @@ def fig_influence():
 
 
 def pairplot(data, labels, cvals, clabel, path, title):
-    """下三角のみ・正方形パネルの pairplot。点の色 = cvals。"""
     m = len(labels)
     fig, axes = plt.subplots(m, m, figsize=(3.3 * m, 3.3 * m))
     sc = None
@@ -209,14 +214,12 @@ def pairplot(data, labels, cvals, clabel, path, title):
             ax = axes[i, j]
             ax.set_box_aspect(1)
             if j > i:
-                # 上三角: 相関係数 r を表示（|r|で文字サイズ, 符号で背景色 赤=正/青=負）
                 r = float(np.corrcoef(data[:, j], data[:, i])[0, 1])
                 ax.set_xticks([]); ax.set_yticks([])
                 col = matplotlib.cm.RdBu_r((r + 1) / 2)
                 ax.set_facecolor((col[0], col[1], col[2], 0.25))
                 ax.text(0.5, 0.5, "%.2f" % r, ha="center", va="center",
-                        transform=ax.transAxes, fontweight="bold",
-                        fontsize=13 + abs(r) * 20)
+                        transform=ax.transAxes, fontweight="bold", fontsize=13 + abs(r) * 20)
                 continue
             if i == j:
                 ax.hist(data[:, i], bins=18, color="0.75", edgecolor="w")
@@ -236,7 +239,7 @@ def pairplot(data, labels, cvals, clabel, path, title):
     cax = fig.add_axes([0.92, 0.15, 0.02, 0.7])
     cbar = fig.colorbar(sc, cax=cax); cbar.set_label(clabel, fontsize=16); cbar.ax.tick_params(labelsize=12)
     fig.suptitle(title, fontsize=19, y=0.93)
-    plt.savefig(path, dpi=140, bbox_inches="tight"); plt.close()
+    plt.savefig(path, dpi=130, bbox_inches="tight"); plt.close()
 
 
 def main():
@@ -247,48 +250,49 @@ def main():
     fig_vary_size()
     fig_influence()
 
-    # 目的空間マップ用 LHS (Q, heatCeffToAir, level, size)
-    X = lhs(args.n, [(550.0, 720.0), (5.0, 12.0), (0.05, 0.16), (0.9, 1.3)])
-    Q, h_air, level, size = X.T
-    Tmax = np.empty(args.n); tset = np.empty(args.n)
+    # LHS: Q, heatCeffToAir, level, size, 外気温Tair
+    X = lhs(args.n, [(550.0, 720.0), (5.0, 12.0), (0.05, 0.16), (0.9, 1.3), (15.0, 35.0)])
+    Q, h_air, level, size, Tair = X.T
+    dT = np.empty(args.n); tset = np.empty(args.n)
+    Vol = np.empty(args.n); Atop = np.empty(args.n); Agnd = np.empty(args.n)
     for k in range(args.n):
-        Tmax[k], tset[k] = responses(Q[k], h_air[k], level[k], size=size[k])
+        dT[k], tset[k] = responses(Q[k], h_air[k], level[k], Tair=Tair[k], size=size[k])
+        Vol[k] = volume_L(level[k], size[k])
+        Atop[k], Agnd[k] = areas_top_ground(level[k], size[k])
+    print("実験 参考: ΔT=%.2f K, 5τ=%.2f h" % (dT_exp, tset_exp))
+
+    # 目的空間 5τ–ΔT, 色 = 外気温
     fig, ax = plt.subplots(figsize=(8.5, 6.5))
-    scn = ax.scatter(tset, Tmax, c=size, cmap="plasma", s=28, alpha=0.85)
-    ax.plot(tset_exp, Tmax_exp, "k*", markersize=22, label="実験値（参考）")
-    ax.set_xlabel("整定時間 5τ [h]", fontsize=15); ax.set_ylabel("最大温度 Tmax [degC]", fontsize=15)
-    ax.set_title("目的空間 5τ–Tmax（点の色 = タンク寸法倍率 size）", fontsize=15)
-    cb = plt.colorbar(scn); cb.set_label("size (倍)", fontsize=15)
+    scn = ax.scatter(tset, dT, c=Tair, cmap="coolwarm", s=28, alpha=0.85)
+    ax.plot(tset_exp, dT_exp, "k*", markersize=22, label="実験値（参考）")
+    ax.set_xlabel("整定時間 5τ [h]", fontsize=15); ax.set_ylabel("温度上昇 ΔT [K]", fontsize=15)
+    ax.set_title("目的空間 5τ–ΔT（点の色 = 外気温 Tair）", fontsize=15)
+    cb = plt.colorbar(scn); cb.set_label("外気温 Tair [degC]", fontsize=15)
     ax.grid(True, alpha=0.4); ax.legend(fontsize=12); ax.tick_params(labelsize=12)
     plt.tight_layout()
     out = os.path.join(IMG2, "objective_map.png")
     plt.savefig(out, dpi=140, bbox_inches="tight"); plt.close()
     print("saved:", out)
 
-    # ---- リッチ pairplot: 設計変数(Q,h,水位,体積) + 各熱流 + 応答 ----
-    Vol = np.array([volume_L(level[k], size[k]) for k in range(args.n)])
-    Qtop = np.empty(args.n); Qgnd = np.empty(args.n)
-    for k in range(args.n):
-        Qtop[k], Qgnd[k] = heat_flows(Q[k], h_air[k], level[k], size[k])
-    rich = np.column_stack([Q, h_air, level, Vol, Qtop, Qgnd, Tmax, tset])
-    rlabels = ["発熱量Q [W]", "heatCeffToAir", "水位 [m]", "体積 [L]",
-               "上面→大気 [W]", "側/底→地面 [W]", "Tmax [degC]", "5τ [h]"]
-    pairplot(rich, rlabels, Tmax, "Tmax [degC]",
+    # リッチ pairplot: 設計変数(Q,h,外気温,水位) + 放熱面積 + ΔT・5τ
+    rich = np.column_stack([Q, h_air, Tair, level, Atop, Agnd, dT, tset])
+    rlabels = ["発熱量Q [W]", "heatCeffToAir", "外気温 [degC]", "水位 [m]",
+               "上面積 [m²]", "側/底面積 [m²]", "温度上昇 ΔT [K]", "5τ [h]"]
+    pairplot(rich, rlabels, dT, "温度上昇 ΔT [K]",
              os.path.join(IMG2, "pairplot.png"),
-             "pairplot（設計変数＋各熱流＋体積, 色 = Tmax／発熱量 = 上面放熱＋地面放熱）")
+             "pairplot（設計変数＋放熱面積, 色 = 温度上昇ΔT, 上三角 = 相関係数）")
     print("saved:", os.path.join(IMG2, "pairplot.png"))
 
-    # ---- タンク別 Lx 個別スタディの pairplot ----
+    # タンク別 Lx 個別スタディ pairplot
     Xd = lhs(args.n, [(0.7, 1.4), (0.7, 1.4), (0.7, 1.4)], seed=7)
     sL1, sL2, sL3 = Xd.T
-    Tm = np.empty(args.n); tsd = np.empty(args.n)
+    dTl = np.empty(args.n); tsl = np.empty(args.n)
     for k in range(args.n):
-        Tm[k], tsd[k] = responses(QF, HF, LF, s1=sL1[k], s2=sL2[k], s3=sL3[k])
-    data = np.column_stack([sL1, sL2, sL3, Tm, tsd])
-    labels = ["Lx1 倍率", "Lx2 倍率", "Lx3 倍率", "Tmax [degC]", "5τ [h]"]
-    pairplot(data, labels, Tm, "Tmax [degC]",
-             os.path.join(IMG2, "pairplot_Lx.png"),
-             "タンク別 Lx を個別に変えたスタディ pairplot（色 = Tmax, 時間指標 = 5τ）")
+        dTl[k], tsl[k] = responses(QF, HF, LF, s1=sL1[k], s2=sL2[k], s3=sL3[k])
+    data = np.column_stack([sL1, sL2, sL3, dTl, tsl])
+    labels = ["Lx1 倍率", "Lx2 倍率", "Lx3 倍率", "ΔT [K]", "5τ [h]"]
+    pairplot(data, labels, dTl, "ΔT [K]", os.path.join(IMG2, "pairplot_Lx.png"),
+             "タンク別 Lx を個別に変えたスタディ（色 = ΔT, 上三角 = 相関係数）")
     print("saved:", os.path.join(IMG2, "pairplot_Lx.png"))
 
 

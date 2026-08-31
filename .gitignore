@@ -19,6 +19,21 @@ OM/*.xml
 OM/_*.mos
 OM/ana003_Tank3blocks_cyclononly_NoTemp
 OM/ana003_Tank3blocks_cyclononly_NoTemp.exe
+# OM ビルド副産物・実行結果（サブフォルダ含む）
+OM/_ctrl/
+OM/**/*.bin
+OM/**/*.o
+OM/**/*.c
+OM/**/*.h
+OM/**/*.exe
+OM/**/*.bat
+OM/**/*.log
+OM/**/*.makefile
+OM/**/*.json
+OM/**/*.xml
+OM/**/*.libs
+OM/**/*_res.csv
+OM/**/res_*.csv
 
 # eva*.py / compare / param_study が吐く出力（図は docs/img のみ追跡）
 data/temperature_*.csv
