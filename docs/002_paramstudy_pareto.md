@@ -84,8 +84,27 @@ python param_study.py pareto --csv results.csv
 
 ---
 
+## 5b. タンク別 Lx を個別に変えたスタディ（pairplot）
+
+各タンクの Lx（Lx1_1 / Lx2_1,Lx2_2 / Lx3_1）を個別に 0.7–1.4 倍したときの pairplot。
+点の色＝Tmax、時間指標＝**5τ**（整定時間）。
+
+![Lx個別 pairplot](img/002/pairplot.png)
+
+- **Lx2（tank2）を大きくすると Tmax が強く低下**（明確な負の相関）。tank2 上面が放熱面の 65%。
+- Lx3 は中程度、**Lx1 はほとんど効かない**（感度解析と一致）。
+- 5τ は Lx でほとんど変わらない（面積と水量が同率で増えるため）。
+
+> 時間指標は 001 の fit 図と統一して **5τ（99.3%到達, 整定時間）** を用いている。
+
+---
+
 ## 6. まとめ
 
-- **Tmax は Q・heatCeffToAir・size、τ は level が支配**（影響グリッドで確認）。
-- **タンク寸法拡大（容量増）は τ を変えず Tmax を下げる**（放熱面積増）。
+- **Tmax は Q・heatCeffToAir・size(≒Lx2)、τ は level が支配**（影響グリッド・pairplot で確認）。
+- **タンク寸法拡大（容量増）は τ を変えず Tmax を下げる**（放熱面積増）。効くのは tank2 の Lx。
 - 目的空間マップで到達可能域を把握。目標を定めれば因子帯を選定できる。
+
+> **これらは集中定数（Python 解析解）の代理結果**。実機 OpenModelica で回す手順と、
+> 代理との一致検証（基準36.1℃／フィット37.8℃／タンク差0.06℃）は
+> **[003_openmodelica_paramstudy_howto.md](003_openmodelica_paramstudy_howto.md)** 参照。

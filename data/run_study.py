@@ -85,7 +85,11 @@ Tair = 24.5
 def run_case(case, Q, h_air, h_in, kground, level):
     """1ケースを omc.exe で実行し、時刻・OM平均水温[degC]を返す。"""
     mos_path = os.path.join(WORK, f"case_{case:03d}.mos")
-    model_fwd = MODEL_FILE.replace("\\", "/")
+    # omc.exe は Windows バイナリなので、WSL パス(/mnt/f/..)を Windows パス(F:/..)へ変換
+    try:
+        model_fwd = subprocess.check_output(["wslpath", "-m", MODEL_FILE]).decode().strip()
+    except Exception:
+        model_fwd = MODEL_FILE.replace("\\", "/")
     override = (f"Q_cyclone={Q:.4f},heatCeffToAir={h_air:.5f},"
                 f"heatCefftTank2in={h_in:.5f},kground={kground:.4f},"
                 f"level_start={level:.5f}")

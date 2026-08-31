@@ -11,6 +11,14 @@ OM/*.makefile
 OM/*_info.json
 OM/*_init.xml
 OM/*_FMU*
+OM/*.bat
+OM/*.log
+OM/*.bin
+OM/*.json
+OM/*.xml
+OM/_*.mos
+OM/ana003_Tank3blocks_cyclononly_NoTemp
+OM/ana003_Tank3blocks_cyclononly_NoTemp.exe
 
 # eva*.py / compare / param_study が吐く出力（図は docs/img のみ追跡）
 data/temperature_*.csv
