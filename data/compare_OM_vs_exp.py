@@ -49,7 +49,7 @@ exp_mean = np.mean(np.vstack(list(exp.values())), axis=0)
 # OM 結果 CSV の読み込み
 # ============================================================
 DEFAULT_OM_CSV = os.path.join(
-    os.path.dirname(__file__), "..", "OM",
+    os.path.dirname(__file__), "..", "OM", "temp_off",
     "ana003_Tank3blocks_cyclononly_NoTemp_res.csv"
 )
 

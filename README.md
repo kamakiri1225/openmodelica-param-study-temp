@@ -8,7 +8,7 @@ Windows の Python + OpenModelica(omc.exe) で回す自動パラメータスタ�
 
 ## 主な結果
 
-- モデル（`OM/ana003_Tank3blocks_cyclononly_NoTemp.mo`）と実験（`data/eva5.py`）を照合。
+- モデル（`OM/temp_off/ana003_Tank3blocks_cyclononly_NoTemp.mo`）と実験（`data/eva5.py`）を照合。
 - ベースは飽和温度が −1.6℃ 低く、立ち上がりも遅い（RMSE 2.42℃）。
 - 集中定数フィットで **RMSE 0.24℃** まで一致（`Q=610` 固定、`heatCeffToAir=8.79`,
   `level_start=0.0755`）。飽和温度は放熱 UA を約12%減、立ち上がりは実効水量を
@@ -19,19 +19,22 @@ Windows の Python + OpenModelica(omc.exe) で回す自動パラメータスタ�
 ## 構成
 
 ```
-OM/    OpenModelica モデル(.mo)、実行スクリプト run_sim.mos
-data/  実験データ eva*.py、比較 compare_OM_vs_exp.py、
-       パラメータスタディ param_study.py / run_study.py
-docs/  計画書 parameter_study_plan.md、図生成 make_figures.py / fit_params.py、img/
+OM/       OpenModelica モデル（OM/README.md 参照）
+  temp_off/  温度管理なし（NoTemp, 主対象）＋ run_sim.mos
+  temp_on/   温度管理あり（PIDレギュレータ）
+  _archive/  旧版（未使用）
+data/     実験データ eva*.py、比較 compare_OM_vs_exp.py、param_study.py / run_study.py
+docs/     計画書・レポート(001-004)、図生成スクリプト、img/
+cup/      桶の水加熱 1DCAE（別テーマ, cup/README.md 参照）
 ```
 
 ## 使い方（Windows）
 
 ```bat
 :: 基準ケースを OM で回して実験と比較
-cd OM
+cd OM\temp_off
 "C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_sim.mos
-cd ..\data
+cd ..\..\data
 python compare_OM_vs_exp.py
 
 :: パラメータスタディ（LHS -> omc 実行 -> パレート）

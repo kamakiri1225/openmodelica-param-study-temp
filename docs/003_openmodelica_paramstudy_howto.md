@@ -15,7 +15,7 @@
   - Windows: `C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe`
   - WSL から使う場合: `/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe`
 - Python: `numpy pandas matplotlib`（解析・作図）
-- 対象モデル: `OM/ana003_Tank3blocks_cyclononly_NoTemp.mo`
+- 対象モデル: `OM/temp_off/ana003_Tank3blocks_cyclononly_NoTemp.mo`
   （投入熱 `Q_cyclone`、`heatCeffToAir`、`heatCefftTank2in`、`kground`、`level_start` が
   すべて top-level `parameter` なので `-override` で振れる）
 
@@ -23,14 +23,14 @@
 
 ## 1. 1 ケースを回す（基準ケースの確認）
 
-`OM/run_sim.mos` を omc に渡すと、タンク水温の時系列 CSV が出る。
+`OM/temp_off/run_sim.mos` を omc に渡すと、タンク水温の時系列 CSV が出る。
 
 ```bash
 # WSL
-cd ana005_OM_opt/OM
+cd ana005_OM_opt/OM/temp_off
 "/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_sim.mos
 # Windows (cmd)
-cd ana005_OM_opt\OM
+cd ana005_OM_opt\OM\temp_off
 "C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_sim.mos
 ```
 

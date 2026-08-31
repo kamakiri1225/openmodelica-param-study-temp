@@ -52,7 +52,7 @@ matplotlib.rcParams["axes.unicode_minus"] = False
 # ============================================================
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-MODEL_FILE = os.path.join(ROOT, "OM", "ana003_Tank3blocks_cyclononly_NoTemp.mo")
+MODEL_FILE = os.path.join(ROOT, "OM", "temp_off", "ana003_Tank3blocks_cyclononly_NoTemp.mo")
 MODEL = "ana003_Tank3blocks_cyclononly_NoTemp"
 IMG = os.path.join(ROOT, "docs", "img")
 WORK = os.path.join(HERE, "_work")
