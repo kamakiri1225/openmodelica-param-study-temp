@@ -48,9 +48,13 @@ python param_study.py pareto --csv results.csv
 
 設計因子（**発熱量Q・heatCeffToAir・水位・外気温**）を LHS で振り、各設計点について
 2 条件を評価。**温度管理は「目標＝外気温」**（例：外気15℃なら水温15℃に保持）とした。
-点を **温度管理あり(青)／なし(赤)** で色分け。
+**温度管理あり／なし で画像を分割**（各 250 ケース、上三角＝相関係数）。
 
-![温度管理あり/なし pairplot](img/pairplot_control.png)
+温度管理なし（赤）:
+![温度管理なし pairplot](img/pairplot_control_off.png)
+
+温度管理あり（青, 目標=外気温）:
+![温度管理あり pairplot](img/pairplot_control_on.png)
 
 **読み取り・考察**
 - **温度上昇 ΔT**：温度管理**なし**は ΔT = Q/UA ＝ **9〜24 K**（発熱・放熱条件で分布）。

@@ -88,22 +88,29 @@ def lhs(n, ranges, seed=1):
     return out
 
 
-def pairplot_by_group(data, labels, group, path, title):
-    """下三角=散布(赤=なし/青=あり), 対角=群別ヒスト。"""
+def pairplot1(data, labels, color, path, title):
+    """単色 pairplot。下三角=散布, 対角=ヒスト, 上三角=相関係数(定数列は—)。"""
     m = len(labels)
-    colors = np.where(group == 1, "tab:blue", "tab:red")
     fig, axes = plt.subplots(m, m, figsize=(3.3 * m, 3.3 * m))
     for i in range(m):
         for j in range(m):
             ax = axes[i, j]
             ax.set_box_aspect(1)
             if j > i:
-                ax.axis("off"); continue
+                xi, xj = data[:, i], data[:, j]
+                if xi.std() < 1e-9 or xj.std() < 1e-9:
+                    ax.text(0.5, 0.5, "—", ha="center", va="center", transform=ax.transAxes, fontsize=16)
+                else:
+                    r = float(np.corrcoef(xj, xi)[0, 1])
+                    col = matplotlib.cm.RdBu_r((r + 1) / 2)
+                    ax.set_facecolor((col[0], col[1], col[2], 0.25))
+                    ax.text(0.5, 0.5, "%.2f" % r, ha="center", va="center",
+                            transform=ax.transAxes, fontweight="bold", fontsize=13 + abs(r) * 20)
+                ax.set_xticks([]); ax.set_yticks([]); continue
             if i == j:
-                ax.hist(data[group == 0, i], bins=18, color="tab:red", alpha=0.5)
-                ax.hist(data[group == 1, i], bins=18, color="tab:blue", alpha=0.5)
+                ax.hist(data[:, i], bins=18, color=color, alpha=0.7)
             else:
-                ax.scatter(data[:, j], data[:, i], c=colors, s=14, alpha=0.5, edgecolor="none")
+                ax.scatter(data[:, j], data[:, i], c=color, s=16, alpha=0.6, edgecolor="none")
             if i == m - 1:
                 ax.set_xlabel(labels[j], fontsize=15)
             else:
@@ -113,12 +120,6 @@ def pairplot_by_group(data, labels, group, path, title):
             elif j != 0:
                 ax.set_yticklabels([])
             ax.tick_params(labelsize=11)
-    from matplotlib.lines import Line2D
-    axes[0, m - 1].axis("off")
-    axes[0, m - 1].legend(handles=[
-        Line2D([0], [0], marker="o", color="w", markerfacecolor="tab:red", markersize=12, label="温度管理なし"),
-        Line2D([0], [0], marker="o", color="w", markerfacecolor="tab:blue", markersize=12, label="温度管理あり(目標=外気温)")],
-        loc="center", fontsize=15)
     fig.suptitle(title, fontsize=20, y=0.93)
     plt.savefig(path, dpi=130, bbox_inches="tight")
     plt.close()
@@ -144,20 +145,18 @@ def main():
         return np.concatenate([a_off, a_on])
     V = np.array([volume_L(level[k]) for k in range(n)])
     Ar = np.array([area_total(level[k]) for k in range(n)])
-    Q2 = stack(Q, Q); h2 = stack(h_air, h_air); Ta2 = stack(Tair, Tair)
-    lv2 = stack(level, level); V2 = stack(V, V); Ar2 = stack(Ar, Ar)
-    dT2 = stack(dT_off, dT_on); t2 = stack(tau5, tau5)
-    group = np.concatenate([np.zeros(n), np.ones(n)]).astype(int)  # 0=なし,1=あり
-
-    data = np.column_stack([Q2, h2, Ta2, V2, Ar2, lv2, dT2, t2])
     labels = ["発熱量Q [W]", "heatCeffToAir", "外気温 [degC]", "体積 [L]",
               "表面積 [m²]", "水位 [m]", "温度上昇 ΔT [K]", "5τ [h]"]
-    out = os.path.join(IMG, "pairplot_control.png")
-    pairplot_by_group(data, labels, group, out,
-                      "温度管理あり／なし パラメータスタディ pairplot（色=温度管理の有無）")
-    print("設計点 %d × 温度管理2条件 = %d ケース相当" % (n, 2 * n))
+
+    data_off = np.column_stack([Q, h_air, Tair, V, Ar, level, dT_off, tau5])
+    data_on = np.column_stack([Q, h_air, Tair, V, Ar, level, dT_on, tau5])
+    pairplot1(data_off, labels, "tab:red", os.path.join(IMG, "pairplot_control_off.png"),
+              "温度管理なし pairplot（%d ケース, 上三角=相関係数）" % n)
+    pairplot1(data_on, labels, "tab:blue", os.path.join(IMG, "pairplot_control_on.png"),
+              "温度管理あり pairplot（目標=外気温, %d ケース／ΔT=0のため相関は—）" % n)
+    print("温度管理なし %d ケース, あり %d ケース（計 %d）" % (n, n, 2 * n))
     print("なし: ΔT=%.1f〜%.1f K (Q/UA)  /  あり: ΔT=0 (水温=外気温)" % (dT_off.min(), dT_off.max()))
-    print("saved:", out)
+    print("saved:", os.path.join(IMG, "pairplot_control_off.png"), "/ _on.png")
 
 
 if __name__ == "__main__":
