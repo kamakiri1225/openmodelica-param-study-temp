@@ -42,15 +42,32 @@
 
 ## 使い方
 
+### WSL / Linux（bash）
 ```bash
 # 自宅版（home/ 内で）
-"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_home.mos   # -> *_home_res.csv
-python compare_home.py                                                     # -> *_home_compare.png
+"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_home.mos    # -> *_home_res.csv
+python3 compare_home.py                                                     # -> *_home_compare.png
 
 # 会社版（company/ 内で）
 "/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_company.mos # -> *_company_res.csv
-python compare_company.py                                                   # -> *_company_compare.png
+python3 compare_company.py                                                  # -> *_company_compare.png
 ```
+
+### Windows（コマンドプロンプト / PowerShell）
+`omc` に PATH が通っていない場合はフルパスで実行する。フォルダへ `cd` してから：
+```bat
+:: 自宅版（home フォルダで）
+cd home
+"C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_home.mos
+python compare_home.py
+
+:: 会社版（company フォルダで）
+cd ..\company
+"C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_company.mos
+python compare_company.py
+```
+PowerShell では先頭に `&` を付ける：`& "C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_home.mos`
+（`omc` に PATH が通っていれば単に `omc run_home.mos` でも可）。
 
 実験データの取得元スクリプトは `company/data/cup_data_mz.py`（画像読み取り値）、
 CSV 書き出しは `company/data/write_cup_csv.py`。詳細な経緯・熱伝達率の理論は `docs/README.md`。

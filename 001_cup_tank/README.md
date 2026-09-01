@@ -96,11 +96,44 @@ Q=610W・外気24.5℃・側面 h=9・底面 h_bot(空気層)・h_l=200 は**固
 
 ## 使い方
 
+### WSL / Linux（bash）
 ```bash
-# このフォルダ内で
-"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_tank.mos  # -> TankHotWater_cyclone_cup_res.csv
-python compare_tank.py                                                    # -> TankHotWater_cyclone_cup_compare.png
+# 温度管理なし（notemp/ 内で）
+"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_tank.mos        # -> *_res.csv
+python3 compare_tank.py                                                         # -> *_compare.png
+python3 heat_breakdown.py                                                       # 熱量内訳
+
+# 温度管理あり（tempctrl/ 内で）
+"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_tank_ctrl.mos   # -> *_res.csv
+python3 compare_tank_ctrl.py                                                    # -> *_compare.png
+"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_onoff.mos       # ON/OFF
+python3 onoff_compare.py
+
+# パラメータスタディ（paramstudy/ 内で, OpenModelica不要）
+python3 pairplot_tank.py --n 300     # -> pairplot_off.png, pairplot_on.png
 ```
 
-- `data/eva5_tank_data.csv` … eva5 実測（`write_tank_csv.py` で `002_tank_base/OM/data/eva5.py` から生成）
+### Windows（コマンドプロンプト / PowerShell）
+対象フォルダへ `cd` してから、omc をフルパスで実行する：
+```bat
+:: 温度管理なし
+cd notemp
+"C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_tank.mos
+python compare_tank.py
+python heat_breakdown.py
+
+:: 温度管理あり
+cd ..\tempctrl
+"C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_tank_ctrl.mos
+python compare_tank_ctrl.py
+"C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_onoff.mos
+python onoff_compare.py
+
+:: パラメータスタディ（OpenModelica不要）
+cd ..\paramstudy
+python pairplot_tank.py --n 300
+```
+PowerShell では omc の先頭に `&` を付ける。`omc` に PATH が通っていれば `omc run_tank.mos` でも可。
+
+- `data/eva5_tank_data.csv`（notemp）/ `data/eva4_tank_data.csv`（tempctrl）… 実測（`write_*_csv.py` で `002_tank_base/OM/data/eva*.py` から生成）
 - `*_res.csv` と `_build/` は再実行で作れるため git 追跡外。
