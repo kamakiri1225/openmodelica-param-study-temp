@@ -1,0 +1,6 @@
+// 温度管理ありタンクを回す:  このフォルダ内で  omc.exe run_tank_ctrl.mos
+loadModel(Modelica); getErrorString();
+loadFile("TankHotWater_cyclone_cup_TempCtrl.mo"); getErrorString();
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=25200, numberOfIntervals=504,
+  outputFormat="csv", variableFilter="time|y_sim_T|y_exp_T|y_cool|tank.medium.T");
+getErrorString();

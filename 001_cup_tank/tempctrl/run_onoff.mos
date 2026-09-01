@@ -1,0 +1,10 @@
+// 同一モデルで温度管理ON/OFF:  omc.exe run_onoff.mos
+loadModel(Modelica); getErrorString();
+loadFile("TankHotWater_cyclone_cup_TempCtrl.mo"); getErrorString();
+// OFF: ctrl_k=0 (=温度管理なし=基準モデルと同一)  5τ(≒32h)まで見えるよう150000s
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=150000, numberOfIntervals=750,
+  outputFormat="csv", variableFilter="time|y_sim_T|y_cool", fileNamePrefix="_off",
+  simflags="-override ctrl_k=0"); getErrorString();
+// ON: ctrl_k=3000 (温度管理あり, 目標=外気24.5℃)
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=150000, numberOfIntervals=750,
+  outputFormat="csv", variableFilter="time|y_sim_T|y_cool", fileNamePrefix="_on"); getErrorString();

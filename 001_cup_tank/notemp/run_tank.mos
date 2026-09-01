@@ -1,0 +1,6 @@
+// タンク(cup集中定数版)を回す:  このフォルダ内で  omc.exe run_tank.mos
+loadModel(Modelica); getErrorString();
+loadFile("TankHotWater_cyclone_cup.mo"); getErrorString();
+simulate(TankHotWater_cyclone_cup, stopTime=100000, numberOfIntervals=500,
+  outputFormat="csv", variableFilter="time|y_sim_T|y_exp_T|tank.medium.T|tank.level");
+getErrorString();
