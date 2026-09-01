@@ -1,0 +1,9 @@
+// 温度管理ゲイン ctrl_k を振るスタディ:  omc.exe run_gain_study.mos
+loadModel(Modelica); getErrorString();
+loadFile("TankHotWater_cyclone_cup_TempCtrl.mo"); getErrorString();
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=60000, numberOfIntervals=600, outputFormat="csv", variableFilter="time|y_sim_T|y_cool", fileNamePrefix="g0",    simflags="-override ctrl_k=0");    getErrorString();
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=60000, numberOfIntervals=600, outputFormat="csv", variableFilter="time|y_sim_T|y_cool", fileNamePrefix="g50",   simflags="-override ctrl_k=50");   getErrorString();
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=60000, numberOfIntervals=600, outputFormat="csv", variableFilter="time|y_sim_T|y_cool", fileNamePrefix="g150",  simflags="-override ctrl_k=150");  getErrorString();
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=60000, numberOfIntervals=600, outputFormat="csv", variableFilter="time|y_sim_T|y_cool", fileNamePrefix="g500",  simflags="-override ctrl_k=500");  getErrorString();
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=60000, numberOfIntervals=600, outputFormat="csv", variableFilter="time|y_sim_T|y_cool", fileNamePrefix="g1500", simflags="-override ctrl_k=1500"); getErrorString();
+simulate(TankHotWater_cyclone_cup_TempCtrl, stopTime=60000, numberOfIntervals=600, outputFormat="csv", variableFilter="time|y_sim_T|y_cool", fileNamePrefix="g3000", simflags="-override ctrl_k=3000"); getErrorString();

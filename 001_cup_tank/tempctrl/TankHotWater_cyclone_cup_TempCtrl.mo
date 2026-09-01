@@ -37,7 +37,7 @@ model TankHotWater_cyclone_cup_TempCtrl
   parameter Real Ttarget_deg = 24.5 "温度管理の目標水温 [degC] (=外気)";
   parameter Real Ttarget_K = Ttarget_deg + 273.15;
   parameter Real ctrl_k = 3000 "温度管理ゲイン [W/K] (0=管理なし=基準モデルと同一)";
-  parameter Real ctrl_Ti = 1500 "温度管理の積分時間 [s]";
+  parameter Real ctrl_Ti = 1500 "積分時間 [s] : k=3000 で減衰比ζ≒1(行き過ぎ無)になる値。根拠 docs/control_tuning.md";
   replaceable package Medium = Modelica.Media.Water.StandardWater;
   Modelica.Fluid.Vessels.OpenTank tank(redeclare package Medium = Medium, T_start = T_ini_K, crossArea = crossArea_tank, height = tank_height, level_start = level_fill, nPorts = 0, use_HeatTransfer = true, use_portsData = false) annotation(
     Placement(transformation(origin = {50, -30}, extent = {{-20, -20}, {20, 20}})));
