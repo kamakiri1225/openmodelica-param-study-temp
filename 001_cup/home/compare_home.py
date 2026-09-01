@@ -31,15 +31,15 @@ matplotlib.rcParams["axes.unicode_minus"] = False
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# 実験データ
+# 実験データ（自宅・単一センサ）
 exp = []
-with open(os.path.join(HERE, "water_heating_temperature_measurement.csv"), encoding="utf-8-sig") as f:
+with open(os.path.join(HERE, "data", "water_heating_temperature_measurement.csv"), encoding="utf-8-sig") as f:
     for row in csv.DictReader(f):
         exp.append((float(row["time_s"]), float(row["temperature_C"])))
 exp = np.array(exp)
 
 # OM 結果
-res = os.path.join(HERE, "CupHotWater_15W_001_res.csv")
+res = os.path.join(HERE, "CupHotWater_15W_home_res.csv")
 rows = list(csv.reader(open(res)))
 hdr = rows[0]
 data = np.array([[float(x) for x in r] for r in rows[1:]])
@@ -53,10 +53,10 @@ ax.plot(exp[:, 0] / 60, exp[:, 1], "ks", markersize=7, label="実験")
 ax.plot(t / 60, sim, "-", color="tab:red", linewidth=2.2, label="OM シミュレーション")
 ax.set_xlabel("時間 [min]", fontsize=13)
 ax.set_ylabel("桶の水温 [degC]", fontsize=13)
-ax.set_title("桶の水加熱（15W, 160×90mm, 水20mm）OM vs 実験  RMSE=%.2f℃" % rmse, fontsize=13)
+ax.set_title("桶の水加熱 自宅版（15W, 160×90mm, 水20mm）OM vs 実験  RMSE=%.2f℃" % rmse, fontsize=13)
 ax.grid(True, alpha=0.4)
 ax.legend(fontsize=12)
 plt.tight_layout()
-out = os.path.join(HERE, "CupHotWater_15W_compare.png")
+out = os.path.join(HERE, "CupHotWater_15W_home_compare.png")
 plt.savefig(out, dpi=150, bbox_inches="tight")
 print("RMSE=%.2f degC  ->  %s" % (rmse, out))

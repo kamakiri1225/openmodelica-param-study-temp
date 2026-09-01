@@ -38,7 +38,7 @@ def load(f):
 
 
 exp = []
-with open(os.path.join(HERE, "water_heating_temperature_measurement.csv"), encoding="utf-8-sig") as f:
+with open(os.path.join(HERE, "data", "water_heating_temperature_measurement.csv"), encoding="utf-8-sig") as f:
     for row in csv.DictReader(f):
         exp.append((float(row["time_s"]), float(row["temperature_C"])))
 exp = np.array(exp)
@@ -63,6 +63,6 @@ ax.set_title("上面熱伝達率 h_top の影響（15W, 160×90mm, 水20mm）", 
 ax.grid(True, alpha=0.4)
 ax.legend(fontsize=11, loc="lower right")
 plt.tight_layout()
-out = os.path.join(HERE, "CupHotWater_15W_htop_compare.png")
+out = os.path.join(HERE, "CupHotWater_15W_home_htop_compare.png")
 plt.savefig(out, dpi=150, bbox_inches="tight")
 print("saved:", out)

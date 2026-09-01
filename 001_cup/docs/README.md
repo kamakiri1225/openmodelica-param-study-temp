@@ -1,44 +1,34 @@
-# 004: 桶の水加熱 1DCAE（CupHotWater_15W）と実験比較
+# 桶の水加熱 1DCAE（CupHotWater_15W）と実験比較
 
-桶（内寸 底面 **160×90 mm**, 高さ30 mm）に水を **20 mm** 入れ、底面を **15 W** で加熱する
-OpenModelica モデル `cup/CupHotWater_15W_001.mo` と実験データの比較。
+桶に水を **20 mm** 入れ、底面を **15 W** で加熱する OpenModelica モデルと実験の比較。
+測定を **2回**（自宅・会社）行い、桶寸法・実測データが異なるため **`home/`（自宅）** と
+**`company/`（会社）** に分けている（トップ `001_cup/README.md` に対応表）。
+
+| | home（自宅） | company（会社） |
+|---|---|---|
+| モデル | `home/CupHotWater_15W_home.mo`（160×90mm, 壁0.5mm, Tamb27.6℃） | `company/CupHotWater_15W_company.mo`（135×96mm, 壁0.2mm, Tamb25℃） |
+| 実測 | 単一センサ（〜2100s） | 6センサ U4-1..U1-4（〜9000s） |
+| 実行 | `run_home.mos`→`compare_home.py` | `run_company.mos`→`compare_company.py` |
 
 ---
 
-## 1. 実行手順（cup フォルダ）
+## 1. 実行手順
 
-`ana005_OM_opt/cup/` 内で実行する。
+各フォルダ内で実行する（WSL 例。Windows は `"C:\Program Files\...\omc.exe"`）。
 
 ```bash
-# 1) OM でモデルを回して結果CSVを作る
-#    WSL:
-"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_cup.mos
-#    Windows(cmd):
-"C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe" run_cup.mos
-#    -> CupHotWater_15W_001_res.csv が出力される
+# --- 自宅版 (home/) ---
+"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_home.mos   # -> CupHotWater_15W_home_res.csv
+python compare_home.py                                                     # -> CupHotWater_15W_home_compare.png
+python htop_compare.py     # (任意) h_top=55/10 比較 -> CupHotWater_15W_home_htop_compare.png
 
-# 2) 実験との比較図を作る
-python plot_cup_compare.py          # -> CupHotWater_15W_compare.png
-
-# 3) (任意) 上面熱伝達率 h_top の影響を見る
-#    先に h_top=55 と 10 の2ケースを OM で回して _build/htop_55.csv, htop_10.csv を作る:
-#    simulate(CupHotWater_15W_001, stopTime=6000, outputFormat="csv",
-#             variableFilter="time|y_sim_T", simflags="-override h_top=55")   (と =10)
-python plot_htop_compare.py         # -> CupHotWater_15W_htop_compare.png
+# --- 会社版 (company/) ---
+"/mnt/c/Program Files/OpenModelica1.26.3-64bit/bin/omc.exe" run_company.mos # -> CupHotWater_15W_company_res.csv
+python compare_company.py                                                   # -> CupHotWater_15W_company_compare.png
 ```
 
 必要 Python パッケージ: `numpy matplotlib`。画面表示なしなら `MPLBACKEND=Agg` を付ける。
-
-**cup フォルダの構成**
-
-| ファイル | 役割 |
-|---|---|
-| `CupHotWater_15W_001.mo` | モデル本体（SUS304桶＋水、上面蒸発＋側/底放熱） |
-| `water_heating_temperature_measurement.csv` | 実験データ（time_s, 桶水温[℃]） |
-| `run_cup.mos` | OM 実行スクリプト |
-| `plot_cup_compare.py` | OM 結果 vs 実験 の比較図 |
-| `plot_htop_compare.py` | h_top=55/10 の比較図 |
-| `*.png` | 出力図 |
+`*_res.csv` と `_build/` は再実行で作り直せるため git 追跡外。
 
 ---
 
@@ -53,11 +43,11 @@ python plot_htop_compare.py         # -> CupHotWater_15W_htop_compare.png
 
 ---
 
-## 3. OM と実験の比較
+## 3. OM と実験の比較（自宅版 home）
 
 修正後、OM と実験は **RMSE 0.55 ℃** でよく一致する（27.6→約41℃で飽和）。
 
-![OM vs 実験](../CupHotWater_15W_compare.png)
+![OM vs 実験](../home/CupHotWater_15W_home_compare.png)
 
 - 水量 288 mL（0.288 kg）、15 W 加熱。
 - 放熱経路：上面（蒸発込み）＋ 側壁・底面（桶壁 SUS304 経由で外気へ）。
@@ -76,7 +66,7 @@ python plot_htop_compare.py         # -> CupHotWater_15W_htop_compare.png
 
 上面を普通の対流（10）にすると放熱不足で **58 ℃まで過熱**し、実験（~41 ℃）と乖離する。
 
-![h_topの影響](../CupHotWater_15W_htop_compare.png)
+![h_topの影響](../home/CupHotWater_15W_home_htop_compare.png)
 
 | h_top | 飽和温度 | RMSE |
 |---|---|---|
@@ -107,9 +97,42 @@ python plot_htop_compare.py         # -> CupHotWater_15W_htop_compare.png
 
 ---
 
-## 5. まとめ
+## 5. 会社版（company）— 3温度（水・壁・外気）の同時比較
 
-- 元モデルの 4 バグ（未宣言テーブル・水位0・寸法・ポート不整合）を修正し、実験と RMSE 0.55℃ で一致。
-- 側面・底面の `h=10` は自然対流の標準値。**上面 `h_top=55` は蒸発を含む実効値**で、
-  Chilton–Colburn アナロジーの概算（~45）とオーダーが合う理論的裏付けあり。
+会社の測定は 6センサ。**実測↔モデルの対応**を付けて比較する：
+
+| 実測センサ | 物理量 | OM 変数 |
+|---|---|---|
+| **U4-1** | 桶の水温 | `y_sim_T` = `cup.medium.T` |
+| **U4-2** | 桶壁（SUS304）温度 | `y_wall_T` = `thermalConductor2.port_b.T` |
+| **U4-3** | 外気温（≈25℃） | `Tamb`（＝初期水温） |
+
+- 実測は加熱開始に合わせ **−420s（7分）シフト**、初期水温は加熱開始時の 25℃ に合わせる。
+- 実測は **水（U4-1, 44.5℃）が 壁（U4-2, 40.0℃）より約4℃高い**。当初 `h_l=1000`（水↔壁密結合）では
+  OM 水温≒壁温 になりこの差を再現できなかった。
+
+**合わせ込み（水深20mm・発熱15W・外気25℃は固定）**
+
+| 係数 | 値 | 意味 |
+|---|---|---|
+| `h`（SUS壁↔外気） | **9** W/m²K | 側面・底面の対流（実測提供値） |
+| `h_top`（上面, 蒸発込み） | **45** W/m²K | Chilton–Colburn 概算 ~45 と一致 |
+| `h_l`（水↔壁, 実効） | **58** W/m²K | 水↔壁に温度差(≈4℃)を持たせU4-1/U4-2を分離 |
+
+→ **水 U4-1 RMSE 0.85℃ / 壁 U4-2 RMSE 0.80℃** で同時に一致。
+
+![会社版 OM vs 実測](../company/CupHotWater_15W_company_compare.png)
+
+> 集中定数の網目解析：水は 15W を受け、上面 `Gtop=h_top·A_top` と 水↔壁 `Gl=h_l·Sin`（直列で壁へ）
+> から放熱、壁は `Gwall=h·(Sout+A_bot)` で外気へ。定常で水温 `Tw=Tamb+15/UA`、壁温は
+> `Tc=Gl·Tw/(Gl+Gwall)`。`h=9` を固定して水44.5℃・壁40℃を満たすよう `h_top=45, h_l=58` を決めた。
+
+---
+
+## 6. まとめ
+
+- **自宅版**：元モデルの 4 バグ（未宣言テーブル・水位0・寸法・ポート不整合）を修正し RMSE 0.55℃ で一致。
+  側面・底面 `h=10`（自宅）、上面 `h_top=55` は蒸発込み実効値（Chilton–Colburn ~45 と整合）。
+- **会社版**：水(U4-1)・壁(U4-2)・外気(U4-3) の3温度を対応づけ、`h=9, h_top=45, h_l=58` で
+  水↔壁の4℃差まで含めて同時再現（水 0.85℃ / 壁 0.80℃）。
 - 精密化するなら蒸発を蒸気圧差で陽にモデル化する。

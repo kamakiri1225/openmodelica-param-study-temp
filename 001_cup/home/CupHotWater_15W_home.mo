@@ -1,4 +1,4 @@
-model CupHotWater_15W_001
+model CupHotWater_15W_home
   extends Modelica.Icons.Example;
   import pi = Modelica.Constants.pi;
   //ambient
@@ -134,4 +134,4 @@ y_sim_T(シミュレーション) と y_exp_T(実験) を比較する。
     version = "",
     __OpenModelica_commandLineOptions = "",
     experiment(StartTime = 0, StopTime = 3600, Tolerance = 1e-06, Interval = 1));
-end CupHotWater_15W_001;
+end CupHotWater_15W_home;

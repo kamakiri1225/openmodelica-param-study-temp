@@ -1,0 +1,6 @@
+// 桶水加熱(会社版)を回す:  このフォルダ(company/)内で  omc.exe run_company.mos
+loadModel(Modelica); getErrorString();
+loadFile("CupHotWater_15W_company.mo"); getErrorString();
+simulate(CupHotWater_15W_company, stopTime=9000, numberOfIntervals=900,
+  outputFormat="csv", variableFilter="time|y_sim_T|y_wall_T|y_exp_T|cup.medium.T|cup.level");
+getErrorString();
