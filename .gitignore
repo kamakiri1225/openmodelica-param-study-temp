@@ -47,3 +47,7 @@ __pycache__/
 *.pyo
 .DS_Store
 Thumbs.db
+
+# 004_tank_eva: メーカー資料(Daikin カタログ)は手元のみ・公開しない
+004_tank_eva/docs/*.pdf
+004_tank_eva/eva4/docs/img/daikin_*.png
