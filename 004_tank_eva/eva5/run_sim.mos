@@ -1,0 +1,15 @@
+// ============================================================
+//  eva5 run_sim.mos  (Windows OpenModelica)
+//  使い方(eva フォルダ内で):
+//    "C:\\Program Files\\OpenModelica1.26.3-64bit\\bin\\omc.exe" run_sim.mos
+//  出力: ana003_Tank3blocks_cyclononly_NoTemp_res.csv (time, tank1/2/3.medium.T [K])
+//  その後  python compare.py  で実測と比較
+// ============================================================
+loadModel(Modelica); getErrorString();
+loadFile("model/ana003_Tank3blocks_cyclononly_NoTemp.mo"); getErrorString();
+simulate(ana003_Tank3blocks_cyclononly_NoTemp,
+  stopTime          = 100000,
+  numberOfIntervals = 2000,
+  outputFormat      = "csv",
+  variableFilter    = "time|tank1.medium.T|tank2.medium.T|tank3.medium.T");
+getErrorString();

@@ -1,0 +1,7 @@
+// eva4_06_pumpOutSensor 実行 (自己完結)。 omc.exe run_sim_06_pumpOutSensor.mos
+// 初期水温は実測開始時の23.8℃に合わせる(-override T_ini)
+loadModel(Modelica); getErrorString();
+loadFile("model/eva4_06_pumpOutSensor.mo"); getErrorString();
+simulate(eva4_06_pumpOutSensor, stopTime=30000, numberOfIntervals=3000, outputFormat="csv", simflags="-override=T_ini=296.95",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|sCooler.localWater.T|sCooler.cooler.Q_flow|sCooler.T_used|T_pumpOut.T");
+getErrorString();

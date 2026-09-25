@@ -1,0 +1,4 @@
+// Tank3_sample 実行スクリプト (自己完結)
+loadModel(Modelica); getErrorString();
+loadFile("Tank3_sample.mo"); getErrorString();
+simulate(Tank3_sample, stopTime=100000, numberOfIntervals=2000, outputFormat="csv", variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T"); getErrorString();

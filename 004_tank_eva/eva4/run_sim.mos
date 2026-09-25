@@ -1,0 +1,6 @@
+// eva4 温度管理モデル実行 (Windows OpenModelica)。 omc.exe run_sim.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/ana001_Tank_004.mo"); getErrorString();
+simulate(ana001_Tank_004, stopTime=25200, numberOfIntervals=2000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|T_Treg_out.T");
+getErrorString();

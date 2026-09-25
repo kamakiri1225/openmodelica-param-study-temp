@@ -1,0 +1,6 @@
+// eva5_04 実行 (自己完結・1ファイル)。 omc.exe run_sim_04.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva5_04_pumpHeat_ground_air.mo"); getErrorString();
+simulate(eva5_04_pumpHeat_ground_air, stopTime=100000, numberOfIntervals=2000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T");
+getErrorString();

@@ -8,6 +8,7 @@ OpenModelica による 1DCAE モデルと実験データの比較・パラメー
 | **[001_cup](001_cup/)** | 桶の水加熱（15W） | 底面加熱の1DCAE。実験と RMSE 0.55℃ で一致。蒸発を含む上面熱伝達率の検討 |
 | **[002_tank_base](002_tank_base/)** | タンク水温 ベース | 3槽サイクロン加熱モデルの合わせこみ（実験 eva5, RMSE 0.24℃）・数式化・感度 |
 | **[003_tank_para](003_tank_para/)** | タンク パラメータスタディ | 因子影響・pairplot・**温度管理あり/なし**の比較（実機OM＋pairplot） |
+| **[004_tank_eva](004_tank_eva/)** | タンク水温 評価別の検証・温度管理モデル | 実測 eva1/2/4/5 との照合。温度管理ループ tank2→tank3、tank1 のよどみ部分割で eva4 に一致（RMSE 0.05℃）。解説は [eva4/docs](004_tank_eva/eva4/docs/001_overview.md) |
 
 各フォルダは自己完結（モデル `.mo`・スクリプト・データ・`docs/`）。実行手順は各 `docs/README.md` 参照。
 

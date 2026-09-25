@@ -1,0 +1,6 @@
+// eva4_02_catalog 実行 (自己完結)。 omc.exe run_sim_02_catalog.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva4_02_catalog.mo"); getErrorString();
+simulate(eva4_02_catalog, stopTime=100000, numberOfIntervals=2000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|tempControl.cooler.Q_flow");
+getErrorString();

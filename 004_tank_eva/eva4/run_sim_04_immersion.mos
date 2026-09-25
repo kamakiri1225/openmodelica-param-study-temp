@@ -1,0 +1,6 @@
+// eva4_04_immersion 実行 (自己完結)。 omc.exe run_sim_04_immersion.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva4_04_immersion.mo"); getErrorString();
+simulate(eva4_04_immersion, stopTime=100000, numberOfIntervals=2000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|immCooler.coil.Q_flow|immCooler.evap.T");
+getErrorString();

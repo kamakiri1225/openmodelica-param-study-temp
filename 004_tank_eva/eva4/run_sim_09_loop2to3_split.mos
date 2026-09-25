@@ -1,0 +1,6 @@
+// eva4_09_loop2to3_split 実行 (自己完結)。 omc.exe run_sim_09_loop2to3_split.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva4_09_loop2to3_split.mo"); getErrorString();
+simulate(eva4_09_loop2to3_split, stopTime=30000, numberOfIntervals=3000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|tempControl.cooler.Q_flow|tempControl.Tsens.T|zone1.zone.T");
+getErrorString();

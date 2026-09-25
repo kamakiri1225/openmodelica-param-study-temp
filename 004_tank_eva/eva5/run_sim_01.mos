@@ -1,0 +1,6 @@
+// eva5_01_base 実行 (自己完結・1ファイル)。 omc.exe run_sim_01.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva5_01_base.mo"); getErrorString();
+simulate(eva5_01_base, stopTime=100000, numberOfIntervals=2000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T");
+getErrorString();

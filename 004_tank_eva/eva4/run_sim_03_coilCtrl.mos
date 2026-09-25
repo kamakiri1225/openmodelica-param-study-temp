@@ -1,0 +1,6 @@
+// eva4_03_coilCtrl 実行 (自己完結)。 omc.exe run_sim_03_coilCtrl.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva4_03_coilCtrl.mo"); getErrorString();
+simulate(eva4_03_coilCtrl, stopTime=100000, numberOfIntervals=2000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|coilCtrl.coil.Q_flow");
+getErrorString();

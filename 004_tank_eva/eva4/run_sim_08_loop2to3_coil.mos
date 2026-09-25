@@ -1,0 +1,6 @@
+// eva4_08_loop2to3_coil 実行 (自己完結)。 omc.exe run_sim_08_loop2to3_coil.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva4_08_loop2to3_coil.mo"); getErrorString();
+simulate(eva4_08_loop2to3_coil, stopTime=30000, numberOfIntervals=3000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|coilCtrl.coil.Q_flow");
+getErrorString();

@@ -1,0 +1,6 @@
+// eva4_07_loop2to3 実行 (自己完結)。 omc.exe run_sim_07_loop2to3.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva4_07_loop2to3.mo"); getErrorString();
+simulate(eva4_07_loop2to3, stopTime=30000, numberOfIntervals=3000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|tempControl.cooler.Q_flow|tempControl.Tsens.T");
+getErrorString();

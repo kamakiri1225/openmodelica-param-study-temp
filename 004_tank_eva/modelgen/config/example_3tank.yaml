@@ -1,0 +1,59 @@
+# ============================================================
+#  タンク水温モデル 設定ファイル (YAML)
+#  この設定を gen_model.py に渡すと OpenModelica モデル(.mo)が生成される。
+#    python gen_model.py config/example_3tank.yaml
+# ============================================================
+
+model_name: Tank3_sample        # 生成モデル名(=ファイル名)
+
+# 全体の共通設定
+ambient_degC: 24.5              # 外気温[℃](地面・外気の境界温度)
+tank_thickness_mm: 2.3         # タンク板厚[mm](地面への熱伝導に使用)
+
+# --- 既定値(一般値)。各タンクで省略した項目はここが使われる。必要な時だけ上書き ---
+defaults:
+  height_mm: 240      # タンク高さ[mm]
+  level_mm: 150       # 初期水位 level_start[mm]  ※level_mm = level_start
+  h_air: 10           # 上面・外面→外気 自然対流[W/m2K] (一般値。eva5合わせこみは8.79, 蒸発込みなら45)
+  h_liquid_wall: 10   # 液→内壁[W/m2K] (eva5タンク準拠=10。※コップは58で別条件。飽和温度に効くので要調整)
+  k_ground: 1.5       # 底→地面 熱伝導率[W/mK] (非律速=値は結果にほぼ効かない。任意でOK)
+
+# --- タンク(今回は3つ) ---
+#  接続は各タンクの connect_to に書く(相互なので片方向だけでOK。tank1→tank2 と書けば tank2→tank1 も成立)
+#  幾何(Lx_mm/Ly_mm)は必須。高さ・水位・熱伝達率は省略で defaults を使用(必要なら個別上書き)
+tanks:
+  - id: tank1
+    Lx_mm: 903                 # 内寸 幅[mm](必須)
+    Ly_mm: 479                 # 内寸 奥行[mm](必須)
+    connect_to: [tank2]        # つながる先(水路)
+    # 例: このタンクだけ水位を変えるなら → level_mm: 128
+  - id: tank2
+    Lx_mm: 1191
+    Ly_mm: 1670
+    connect_to: [tank3]
+  - id: tank3
+    Lx_mm: 573
+    Ly_mm: 1191
+    connect_to: []             # 末端(なければ空 or 省略)
+
+# --- ポンプ(投入熱＋循環) ---
+pumps:
+  - id: pump1
+    from: tank1                # 吸込元タンク
+    to:   tank3                # 吐出先タンク
+    heat_W: 610                # 投入熱[W]
+    flow_Lmin: 110             # 流量[L/min]
+
+# --- 温度管理(オプション) ---
+temperature_control:
+  enabled: true                # true=温度管理あり / false=なし
+  spec_kW: 3.5                 # 機種仕様: 3.5 か 5.0 [kW](冷却能力=除熱上限)
+  Ttarget_degC: 25             # 基準温度(設定温度)[℃] ← これに追従
+  flow_Lmin: 25                # 循環流量[L/min]
+  from: tank1                  # 吸込元
+  to:   tank3                  # 吐出先
+
+# シミュレーション設定
+sim:
+  stopTime: 100000
+  intervals: 2000

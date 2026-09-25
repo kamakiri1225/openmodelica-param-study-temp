@@ -1,0 +1,6 @@
+// eva4_01_regLib 実行 (自己完結)。 omc.exe run_sim_01_regLib.mos
+loadModel(Modelica); getErrorString();
+loadFile("model/eva4_01_regLib.mo"); getErrorString();
+simulate(eva4_01_regLib, stopTime=100000, numberOfIntervals=2000, outputFormat="csv",
+  variableFilter="time|tank1.medium.T|tank2.medium.T|tank3.medium.T|tempControl.cooler.Q_flow");
+getErrorString();
